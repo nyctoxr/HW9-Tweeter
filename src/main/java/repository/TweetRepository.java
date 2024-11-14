@@ -30,7 +30,7 @@ public class TweetRepository {
 
         try (var statement = Datasource.getConnection().prepareStatement(INSERT_SQL)) {
             statement.setString(1, tweet.getContent());
-            statement.setInt(2, tweet.getUserId());
+            statement.setLong(2, tweet.getUserId());
             statement.setTimestamp(3, new java.sql.Timestamp(tweet.getCreatedAt().getTime()));
             statement.execute();
         }
