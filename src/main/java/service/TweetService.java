@@ -58,7 +58,7 @@ public class TweetService {
                 if (tagName.equalsIgnoreCase("add")) {
                     System.out.println("Please enter the new tag name: ");
                     String newTagName = scanner.nextLine();
-                    Tags newTag = new Tags(newTagName, 0); // tweetId will be set later
+                    Tags newTag = new Tags(newTagName, 0);
                     tagRepository.save(newTag);
                     tags.add(newTag);
                     continue;
@@ -82,7 +82,6 @@ public class TweetService {
     private void addTagIfValid(List<Tags> tags, List<Tags> availableTags, String tagName) {
         boolean tagExists = false;
 
-        // Check if the tag already exists in the list
         for (Tags tag : tags) {
             if (tag.getTag_name().equalsIgnoreCase(tagName)) {
                 tagExists = true;
@@ -90,7 +89,7 @@ public class TweetService {
             }
         }
 
-        // Check if the tag exists in the available tags
+
         for (Tags tag : availableTags) {
             if (tag.getTag_name().equalsIgnoreCase(tagName)) {
                 if (!tagExists) {
@@ -105,36 +104,6 @@ public class TweetService {
             System.out.println("Tag does not exist. Please enter a valid tag or type 'add' to add a new tag.");
         }
     }
-
-
-
-//    public void postTweet() throws SQLException {
-//        System.out.println("please enter your tweet content: ");
-//        String content = scanner.nextLine();
-//        if (content.length() <= 280) {
-//            List<Tags> tags = new ArrayList<>();
-//            List<Tags> availabaleTags =tagRepository.getAllTags();
-//            System.out.println("Available tags:");
-//            for (Tags tag : availabaleTags) {
-//                System.out.println(tag.getTag_name());
-//            }
-//            System.out.println("Please enter tags (one at a time, type 'done' to finish, or 'add' to add a new tag): ");
-//
-//            while (true) {
-//                String tagName = scanner.nextLine();
-//                if (tagName.equalsIgnoreCase("done")) {
-//                    break;
-//                }
-//
-//
-//            tweetRepository.save(tweet);
-//            tweets.add(tweet);
-//        }
-//        else {
-//            System.out.println("tweet has to be less than 280 characters!");
-//            Main.accountMenu(loggedInUser);
-//        }
-//    }
 
     public void displayAllTweets() throws SQLException {
         List<Tweet> allTweets = tweetRepository.getAllTweets();

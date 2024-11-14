@@ -28,9 +28,9 @@ public class Main {
             int choice = scanner.nextInt();
             scanner.nextLine();
 
-            if (choice == 1) { // ثبت نام
+            if (choice == 1) {
                 userService.registerUser();
-            } else if (choice == 2) { // ورود
+            } else if (choice == 2) {
                 System.out.print("ایمیل یا نام کاربری: ");
                 String identifier = scanner.nextLine();
                 System.out.print("رمز عبور: ");
@@ -51,7 +51,7 @@ public class Main {
             System.out.println("5. Logout");
             System.out.print("Please Enter your choice: ");
             int choice = scanner.nextInt();
-            scanner.nextLine(); // پاک کردن خط بعدی
+            scanner.nextLine();
 
             switch (choice) {
                 case 1:
@@ -64,7 +64,7 @@ public class Main {
                     tweetService.displayUserTweets((int) user.getId());
                     break;
                 case 4:
-                    // اینجا کد برای ویرایش پروفایل کاربر قرار می‌گیرد
+
                     System.out.println("Edit your profile");
                     break;
                 case 5:
