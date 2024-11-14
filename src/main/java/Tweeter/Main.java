@@ -3,6 +3,7 @@ package Tweeter;
 import entities.User;
 import entities.Tweet;
 import repository.LikesRepository;
+import repository.TagRepository;
 import repository.TweetRepository;
 import repository.UserRepository;
 import service.TweetService;
@@ -16,7 +17,7 @@ import java.util.Scanner;
 public class Main {
     static UserRepository userRepository = new UserRepository();
     static UserService userService = new UserService(userRepository);
-    static TweetService tweetService = new TweetService(new TweetRepository(), new LikesRepository(), userService);
+    static TweetService tweetService = new TweetService(new TweetRepository(), new LikesRepository(), userService, new TagRepository());
     static Scanner scanner = new Scanner(System.in);
 
     public static void main(String[] args) throws SQLException {
@@ -60,7 +61,7 @@ public class Main {
                     tweetService.postTweet();
                     break;
                 case 3:
-                    tweetService.displayUserTweets(user.getId());
+                    tweetService.displayUserTweets((int) user.getId());
                     break;
                 case 4:
                     // اینجا کد برای ویرایش پروفایل کاربر قرار می‌گیرد

@@ -35,21 +35,21 @@ public class LikesRepository {
     }
     public void delete(int tweetid,int userid) throws SQLException {
         try (var statement = Datasource.getConnection().prepareStatement(REMOVE_SQL)) {
-            statement.setInt(1, tweetid);
-            statement.setInt(2, userid);
+            statement.setLong(1, tweetid);
+            statement.setLong(2, userid);
             statement.executeUpdate();
         }
     }
-    public int countLikes(int tweetid) throws SQLException {
+    public int countLikes(long tweetid) throws SQLException {
         try (var statement = Datasource.getConnection().prepareStatement(COUNT_LIKES)) {
-            statement.setInt(1, tweetid);
+            statement.setLong(1, tweetid);
             ResultSet rs = statement.executeQuery();
             return rs.next() ? rs.getInt(1) : 0;
         }
     }
-    public int countDislikes(int tweetid) throws SQLException {
+    public int countDislikes(long tweetid) throws SQLException {
         try (var statement = Datasource.getConnection().prepareStatement(COUNT_DISLIKES)) {
-            statement.setInt(1, tweetid);
+            statement.setLong(1, tweetid);
             ResultSet rs = statement.executeQuery();
             return rs.next() ? rs.getInt(1) : 0;
         }

@@ -41,9 +41,9 @@ public class TweetRepository {
             try (var statement = Datasource.getConnection().prepareStatement(READ_ALL_TWEETS);
                  ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    int id = resultSet.getInt("id");
+                    long id = resultSet.getInt("id");
                     String content = resultSet.getString("content");
-                    int userId = resultSet.getInt("user_id");
+                    long userId = resultSet.getInt("user_id");
                     java.util.Date createdAt = resultSet.getTimestamp("created_at");
                     Tweet tweet = new Tweet(id, content, userId, createdAt,new ArrayList<>());
                     tweets.add(tweet);
