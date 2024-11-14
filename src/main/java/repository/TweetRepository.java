@@ -23,6 +23,7 @@ public class TweetRepository {
             LEFT JOIN likes ON tweets.id=likes.tweet_id
             GROUP BY tweets.id ,tweets.user_id,tweets.created_at
             """;
+
     private final List<Tweet> tweets = new ArrayList<>();
 
     public Tweet save(Tweet tweet) throws SQLException {
@@ -44,7 +45,7 @@ public class TweetRepository {
                     String content = resultSet.getString("content");
                     int userId = resultSet.getInt("user_id");
                     java.util.Date createdAt = resultSet.getTimestamp("created_at");
-                    Tweet tweet = new Tweet(id, content, userId, createdAt);
+                    Tweet tweet = new Tweet(id, content, userId, createdAt,new ArrayList<>());
                     tweets.add(tweet);
                 }
             }
