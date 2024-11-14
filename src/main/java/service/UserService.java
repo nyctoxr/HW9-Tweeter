@@ -8,8 +8,13 @@ import java.util.Scanner;
 
 public class UserService {
     public static User loggedInUser;
-    public static UserRepository userRepository;
-    Scanner scanner = new Scanner(System.in);
+    private final UserRepository userRepository;
+    private Scanner scanner;
+
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+        this.scanner = new Scanner(System.in);
+    }
 
     public void registerUser() throws SQLException {
         System.out.println("Please enter your display name: ");

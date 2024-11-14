@@ -2,42 +2,45 @@ package Tweeter;
 
 import entities.User;
 import entities.Tweet;
+import repository.LikesRepository;
+import repository.TweetRepository;
+import repository.UserRepository;
 import service.TweetService;
 import service.UserService;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-
 import java.util.Scanner;
 
 public class Main {
-    static UserService userService = new UserService();
+    static UserRepository userRepository = new UserRepository();
+    static UserService userService = new UserService(userRepository);
+    static TweetService tweetService = new TweetService(new TweetRepository(), new LikesRepository(), userService);
     static Scanner scanner = new Scanner(System.in);
+
     public static void main(String[] args) throws SQLException {
+        while (true) {
+            System.out.println("1. Sign up");
+            System.out.println("2. Login");
+            System.out.print("Please Enter your choice: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine();
 
-
-            while (true) {
-                System.out.println("1. Sign up");
-                System.out.println("2. Login");
-                System.out.print("Please Enter your choice: ");
-                int choice = scanner.nextInt();
-                scanner.nextLine();
-
-                if (choice == 1) {
-                    userService.registerUser();
-
-                } else if (choice == 2) {
-                    System.out.print("ایمیل یا نام کاربری: ");
-                    String identifier = scanner.nextLine();
-                    System.out.print("رمز عبور: ");
-                    String password = scanner.nextLine();
-                    if(userService.login(identifier, password)) {
-                        accountMenu(userService.getLoggedInUser());
-                    }
+            if (choice == 1) { // ثبت نام
+                userService.registerUser();
+            } else if (choice == 2) { // ورود
+                System.out.print("ایمیل یا نام کاربری: ");
+                String identifier = scanner.nextLine();
+                System.out.print("رمز عبور: ");
+                String password = scanner.nextLine();
+                if (userService.login(identifier, password)) {
+                    accountMenu(userService.getLoggedInUser());
+                }
             }
         }
     }
+
     public static void accountMenu(User user) throws SQLException {
         while (true) {
             System.out.println("1. View all tweets");
@@ -47,23 +50,20 @@ public class Main {
             System.out.println("5. Logout");
             System.out.print("Please Enter your choice: ");
             int choice = scanner.nextInt();
-            scanner.nextLine();
+            scanner.nextLine(); // پاک کردن خط بعدی
 
             switch (choice) {
                 case 1:
-
-                    System.out.println("View all tweets");
+                    tweetService.displayAllTweets();
                     break;
                 case 2:
-
-                    System.out.println("Post a tweet");
+                    tweetService.postTweet();
                     break;
                 case 3:
-
-                    System.out.println("View your tweets");
+                    tweetService.displayUserTweets(user.getId());
                     break;
                 case 4:
-
+                    // اینجا کد برای ویرایش پروفایل کاربر قرار می‌گیرد
                     System.out.println("Edit your profile");
                     break;
                 case 5:
@@ -73,9 +73,5 @@ public class Main {
                     System.out.println("Invalid choice. Please try again.");
             }
         }
-
     }
 }
-
-
-

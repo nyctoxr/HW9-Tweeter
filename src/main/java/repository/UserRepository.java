@@ -9,15 +9,15 @@ import java.util.List;
 
 public class UserRepository {
     private static final String INSERT_SQL = """
-            INSERT INTO users(displayname,email,username,password,bio)
-            VALUES (?,?,?,?,?)
+            INSERT INTO users(displayname, email, username, password, bio)
+            VALUES (?, ?, ?, ?, ?)
             """;
     private static final String AUTH_REG = """
-            SELECT COUNT(*) FROM users(username,password)
+            SELECT COUNT(*) FROM users
             WHERE username = ? OR email = ?
             """;
     private static final String AUTH_LOGIN = """
-            SELECT COUNT(*) FROM users(username,password)
+            SELECT * FROM users
             WHERE username = ? OR email = ?
             """;
     private static final String READ_USERS = """
@@ -25,17 +25,19 @@ public class UserRepository {
             """;
 
     public User save(User user) throws SQLException {
-
-        try (var statement = Datasource.getConnection().prepareStatement(INSERT_SQL)) {
-            statement.setString(1, user.getUsername());
-            statement.setString(2, user.getPassword());
+        try (PreparedStatement statement = Datasource.getConnection().prepareStatement(INSERT_SQL)) {
+            statement.setString(1, user.getDisplayName());
+            statement.setString(2, user.getEmail());
+            statement.setString(3, user.getUsername());
+            statement.setString(4, user.getPassword());
+            statement.setString(5, user.getBio());
             statement.execute();
         }
         return user;
     }
 
     public boolean isUsernameOrEmailTaken(String username, String email) throws SQLException {
-        try (var statement = Datasource.getConnection().prepareStatement(AUTH_REG)) {
+        try (PreparedStatement statement = Datasource.getConnection().prepareStatement(AUTH_REG)) {
             statement.setString(1, username);
             statement.setString(2, email);
             ResultSet rs = statement.executeQuery();
@@ -46,14 +48,14 @@ public class UserRepository {
         return false;
     }
 
-    public User findByUsernameOrEmail(String identifire) throws SQLException {
-        try (var statement = Datasource.getConnection().prepareStatement(AUTH_LOGIN)) {
-            statement.setString(1, identifire);
-            statement.setString(2, identifire);
+    public User findByUsernameOrEmail(String identifier) throws SQLException {
+        try (PreparedStatement statement = Datasource.getConnection().prepareStatement(AUTH_LOGIN)) {
+            statement.setString(1, identifier);
+            statement.setString(2, identifier);
             ResultSet rs = statement.executeQuery();
             if (rs.next()) {
                 return new User(
-                        rs.getInt("id"), // اگر شناسه کاربر وجود دارد
+                        rs.getInt("id"),
                         rs.getString("displayname"),
                         rs.getString("email"),
                         rs.getString("username"),
@@ -66,7 +68,7 @@ public class UserRepository {
     }
 
     public static List<User> findAll() throws SQLException {
-        try (var statement = Datasource.getConnection().prepareStatement(READ_USERS)) {
+        try (PreparedStatement statement = Datasource.getConnection().prepareStatement(READ_USERS)) {
             ResultSet rs = statement.executeQuery();
             List<User> users = new ArrayList<>();
             while (rs.next()) {
