@@ -23,6 +23,11 @@ public class TagRepository {
             SELECT id, name, tweet_id
             FROM tags
             """;
+    private static final String READ_TAG_NAMES_BY_TWEET_ID = """
+            SELECT name
+            FROM tags
+            WHERE tweet_id = ?
+            """;
 
     public void save(Tags tag) throws SQLException {
         try (var statement = Datasource.getConnection().prepareStatement(INSERT_TAG_SQL)) {
@@ -62,4 +67,18 @@ public class TagRepository {
         }
         return tags;
     }
+
+public List<String> getTagNamesByTweetId(long tweetId) throws SQLException {
+    List<String> tagNames = new ArrayList<>();
+    try (var statement = Datasource.getConnection().prepareStatement(READ_TAG_NAMES_BY_TWEET_ID)) {
+        statement.setInt(1, tweetId);
+        try (ResultSet resultSet = statement.executeQuery()) {
+            while (resultSet.next()) {
+                String name = resultSet.getString("name");
+                tagNames.add(name);
+            }
+        }
+    }
+    return tagNames;
+}
 }

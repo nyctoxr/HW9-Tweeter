@@ -108,24 +108,21 @@ public class TweetService {
     public void displayAllTweets() throws SQLException {
         List<Tweet> allTweets = tweetRepository.getAllTweets();
         for (Tweet tweet : allTweets) {
-            List<Tags> tags = tagRepository.getTagsByTweetId(tweet.getId());
-            tweet.setTags(tags);
+            List<String> tags = tagRepository.getTagNamesByTweetId(tweet.getId());
+
             int likes = likesRepository.countLikes(tweet.getId());
             int dislikes = likesRepository.countDislikes(tweet.getId());
-            System.out.println("Tweet ID: " + tweet.getId() + ", User ID: " + tweet.getUserId() + ", Content: " + tweet.getContent() + ", Created At: " + tweet.getCreatedAt() + ", Likes: " + likes + ", Dislikes: " + dislikes + ", Tags: " + tweet.getTags());
+            System.out.println("Tweet ID: " + tweet.getId() + ", User ID: " + tweet.getUserId() + ", Content: " + tweet.getContent() + ", Created At: " + tweet.getCreatedAt() + ", Likes: " + likes + ", Dislikes: " + dislikes + ", Tags: " + tags);
         }
     }
 
-    public void displayUserTweets(int userId) throws SQLException {
-        List<Tweet> allTweets = tweetRepository.getAllTweets();
-        for (Tweet tweet : allTweets) {
-            if (tweet.getUserId() == userId) {
-                List<Tags> tags = tagRepository.getTagsByTweetId(tweet.getId());
-                tweet.setTags(tags);
-                int likes = likesRepository.countLikes(tweet.getId());
-                int dislikes = likesRepository.countDislikes(tweet.getId());
-                System.out.println("Tweet ID: " + tweet.getId() + ", Content: " + tweet.getContent() + ", Created At: " + tweet.getCreatedAt() + ", Likes: " + likes + ", Dislikes: " + dislikes + ", Tags: " + tweet.getTags());
-            }
-        }
+public void displayUserTweets(int userId) throws SQLException {
+    List<Tweet> userTweets = tweetRepository.getTweetById(userId);
+    for (Tweet tweet : userTweets) {
+        List<String > tags = tagRepository.getTagNamesByTweetId(tweet.getId());
+        int likes = likesRepository.countLikes(tweet.getId());
+        int dislikes = likesRepository.countDislikes(tweet.getId());
+        System.out.println("Tweet ID: " + tweet.getId() + ", Content: " + tweet.getContent() + ", Created At: " + tweet.getCreatedAt() + ", Likes: " + likes + ", Dislikes: " + dislikes + ", Tags: " + tags);
     }
+}
 }

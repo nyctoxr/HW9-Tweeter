@@ -8,20 +8,21 @@ import java.sql.SQLException;
 
 public class LikesRepository {
     private static final String INSERT_SQL = """
-            INSERT INTO likes(tweet_id,user_id,is_like)
-            VALUES (?,?,?) ON DUPLICATE KEY UPDATE is_like="true"
+            INSERT INTO likes(tweet_id, user_id, is_like)
+            VALUES (?, ?, ?)
+            ON DUPLICATE KEY UPDATE is_like = VALUES(is_like)
             """;
     private static final String REMOVE_SQL = """
             DELETE FROM likes 
-            WHERE tweet_id=? AND user_id=?
+            WHERE tweet_id = ? AND user_id = ?
             """;
     private static final String COUNT_LIKES = """
             SELECT COUNT(*) FROM likes
-            WHERE tweet_id=? AND is_like="true" 
+            WHERE tweet_id = ? AND is_like = true
             """;
     private static final String COUNT_DISLIKES = """
             SELECT COUNT(*) FROM likes
-            WHERE tweet_id=? AND is_like="false" 
+            WHERE tweet_id = ? AND is_like = false
             """;
 
     public User save(User user) throws SQLException {

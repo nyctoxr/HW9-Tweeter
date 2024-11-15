@@ -44,6 +44,7 @@ public class Main {
 
     public static void accountMenu(User user) throws SQLException {
         while (true) {
+
             System.out.println("1. View all tweets");
             System.out.println("2. Post a tweet");
             System.out.println("3. View your tweets");
