@@ -68,7 +68,7 @@ public class TagRepository {
         return tags;
     }
 
-public List<String> getTagNamesByTweetId(long tweetId) throws SQLException {
+public List<String> getTagNamesByTweetId(int tweetId) throws SQLException {
     List<String> tagNames = new ArrayList<>();
     try (var statement = Datasource.getConnection().prepareStatement(READ_TAG_NAMES_BY_TWEET_ID)) {
         statement.setInt(1, tweetId);

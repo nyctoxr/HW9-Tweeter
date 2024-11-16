@@ -21,12 +21,17 @@ public class TweetRepository {
     private static final String READ_ALL_TWEETS = """
             SELECT * FROM tweets
             LEFT JOIN likes ON tweets.id=likes.tweet_id
-            GROUP BY tweets.id ,tweets.user_id,tweets.created_at
+            GROUP BY tweets.id ,tweets.user_id,tweets.created_at,likes.id
             """;
     private static final String GET_TWEETS_BY_ID = """
             SELECT * FROM tweets
             LEFT JOIN likes ON tweets.id=likes.tweet_id
-            WHERE tweets.id=?
+            WHERE tweets.user_id=?
+            """;
+    private static final String GET_TWEET_BY_TWEET_ID = """
+            SELECT * FROM tweets
+            LEFT JOIN likes ON tweets.id=likes.tweet_id
+            WHERE tweets.tweet_id=?
             """;
 
     private final List<Tweet> tweets = new ArrayList<>();
@@ -75,6 +80,14 @@ public class TweetRepository {
             }
         }
         return userTweets;
+    }
+
+    public Tweet tweetById(long tweetId) throws SQLException {
+        try (var statement = Datasource.getConnection().prepareStatement(GET_TWEETS_BY_ID)) {
+            statement.setLong(1, tweetId);
+            ResultSet resultSet = statement.executeQuery();
+        }
+        return tweetById(tweetId);
     }
 }
 

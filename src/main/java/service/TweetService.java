@@ -108,18 +108,20 @@ public class TweetService {
     public void displayAllTweets() throws SQLException {
         List<Tweet> allTweets = tweetRepository.getAllTweets();
         for (Tweet tweet : allTweets) {
-            List<String> tags = tagRepository.getTagNamesByTweetId(tweet.getId());
+            List<String> tags = tagRepository.getTagNamesByTweetId((int) tweet.getId());
 
             int likes = likesRepository.countLikes(tweet.getId());
             int dislikes = likesRepository.countDislikes(tweet.getId());
             System.out.println("Tweet ID: " + tweet.getId() + ", User ID: " + tweet.getUserId() + ", Content: " + tweet.getContent() + ", Created At: " + tweet.getCreatedAt() + ", Likes: " + likes + ", Dislikes: " + dislikes + ", Tags: " + tags);
         }
+        System.out.println("Enter tweet ID for Reaction: ");
+        int tweetid = scanner.nextInt();
     }
 
 public void displayUserTweets(int userId) throws SQLException {
     List<Tweet> userTweets = tweetRepository.getTweetById(userId);
     for (Tweet tweet : userTweets) {
-        List<String > tags = tagRepository.getTagNamesByTweetId(tweet.getId());
+        List<String > tags = tagRepository.getTagNamesByTweetId((int) tweet.getId());
         int likes = likesRepository.countLikes(tweet.getId());
         int dislikes = likesRepository.countDislikes(tweet.getId());
         System.out.println("Tweet ID: " + tweet.getId() + ", Content: " + tweet.getContent() + ", Created At: " + tweet.getCreatedAt() + ", Likes: " + likes + ", Dislikes: " + dislikes + ", Tags: " + tags);
