@@ -31,9 +31,9 @@ public class Main {
             if (choice == 1) {
                 userService.registerUser();
             } else if (choice == 2) {
-                System.out.print("ایمیل یا نام کاربری: ");
+                System.out.print("Enter email or username to login: ");
                 String identifier = scanner.nextLine();
-                System.out.print("رمز عبور: ");
+                System.out.print("Enter password: ");
                 String password = scanner.nextLine();
                 if (userService.login(identifier, password)) {
                     accountMenu(userService.getLoggedInUser());
@@ -62,7 +62,9 @@ public class Main {
                     tweetService.postTweet();
                     break;
                 case 3:
-                    tweetService.displayUserTweets((int) user.getId());
+                    tweetService.displayUserTweets(user.getId());
+                    System.out.println("       ------       ");
+                    tweetsMenu(user.getId());
                     break;
                 case 4:
 
@@ -74,6 +76,42 @@ public class Main {
                 default:
                     System.out.println("Invalid choice. Please try again.");
             }
+        }
+    }
+    public static void tweetsMenu(int userId) throws SQLException {
+        while (true) {
+            System.out.println("1. Retweet (Coming soon)");
+            System.out.println("2. Edit a tweet");
+            System.out.println("3. Delete a tweet");
+            System.out.println("4. Back to main menu");
+            System.out.print("Please Enter your choice: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine();
+
+            switch (choice) {
+                case 1:
+                    System.out.println("Retweet.");
+                    break;
+                case 2:
+                    tweetService.displayUserTweets(userId);
+                    System.out.print("Enter the tweet ID you want to edit: ");
+                    int tweetIdToEdit = scanner.nextInt();
+                    scanner.nextLine();
+                    tweetService.editUserTweets(userId,tweetIdToEdit);
+                    break;
+                case 3:
+                    tweetService.displayUserTweets(userId);
+                    System.out.print("Enter the tweet ID you want to delete: ");
+                    int tweetIdToDelete = scanner.nextInt();
+                    scanner.nextLine();
+                    tweetService.deleteTweet(tweetIdToDelete, userId);
+                    break;
+                case 4:
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+
         }
     }
 }

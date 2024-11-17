@@ -6,6 +6,7 @@ import entities.Tweet;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 
@@ -23,10 +24,16 @@ public class TweetRepository {
             LEFT JOIN likes ON tweets.id=likes.tweet_id
             GROUP BY tweets.id ,tweets.user_id,tweets.created_at,likes.id
             """;
-    private static final String GET_TWEETS_BY_ID = """
+    private static final String GET_TWEETS_BY_USER_ID = """
             SELECT * FROM tweets
             LEFT JOIN likes ON tweets.id=likes.tweet_id
             WHERE tweets.user_id=?
+            """;
+    private static final String UPDATE_SQL = """
+            UPDATE tweets SET content = ? WHERE id = ?
+            """;
+    private static final String DELETE_SQL = """
+            DELETE FROM tweets WHERE id = ?
             """;
     private static final String GET_TWEET_BY_TWEET_ID = """
             SELECT * FROM tweets
@@ -64,9 +71,9 @@ public class TweetRepository {
         return tweets;
     }
 
-    public List<Tweet> getTweetById(long userId) throws SQLException {
+    public List<Tweet> getTweetByUserId(long userId) throws SQLException {
         List<Tweet> userTweets = new ArrayList<>();
-        try (var statement = Datasource.getConnection().prepareStatement(GET_TWEETS_BY_ID)) {
+        try (var statement = Datasource.getConnection().prepareStatement(GET_TWEETS_BY_USER_ID)) {
             statement.setLong(1, userId);
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
@@ -82,12 +89,34 @@ public class TweetRepository {
         return userTweets;
     }
 
-    public Tweet tweetById(long tweetId) throws SQLException {
-        try (var statement = Datasource.getConnection().prepareStatement(GET_TWEETS_BY_ID)) {
+    public Tweet getTweetByTweetId(long tweetId) throws SQLException {
+        try (var statement = Datasource.getConnection().prepareStatement(GET_TWEET_BY_TWEET_ID)) {
             statement.setLong(1, tweetId);
-            ResultSet resultSet = statement.executeQuery();
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    long id = resultSet.getLong("id");
+                    String content = resultSet.getString("content");
+                    long userId = resultSet.getLong("user_id");
+                    Date createdAt = resultSet.getTimestamp("created_at");
+                    return new Tweet(id, content, userId, createdAt, new ArrayList<>());
+                }
+            }
         }
-        return tweetById(tweetId);
+        return null;
+    }
+
+    public void updateTweet(Tweet tweet) throws SQLException {
+        try (var statement = Datasource.getConnection().prepareStatement(UPDATE_SQL)) {
+            statement.setString(1, tweet.getContent());
+            statement.setLong(2, tweet.getUserId());
+            statement.executeUpdate();
+        }
+    }
+    public void deleteTweet(long tweetId) throws SQLException {
+        try (var statement = Datasource.getConnection().prepareStatement(DELETE_SQL)) {
+            statement.setLong(1, tweetId);
+            statement.executeUpdate();
+        }
     }
 }
 

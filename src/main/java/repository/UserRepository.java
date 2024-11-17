@@ -23,6 +23,10 @@ public class UserRepository {
     private static final String READ_USERS = """
             SELECT * FROM users
             """;
+    private static final String FIND_BY_USER_ID = """
+            SELECT * FROM users
+            WHERE id = ?
+            """;
 
     public User save(User user) throws SQLException {
         try (PreparedStatement statement = Datasource.getConnection().prepareStatement(INSERT_SQL)) {
@@ -52,6 +56,23 @@ public class UserRepository {
         try (PreparedStatement statement = Datasource.getConnection().prepareStatement(AUTH_LOGIN)) {
             statement.setString(1, identifier);
             statement.setString(2, identifier);
+            ResultSet rs = statement.executeQuery();
+            if (rs.next()) {
+                return new User(
+                        rs.getInt("id"),
+                        rs.getString("displayname"),
+                        rs.getString("email"),
+                        rs.getString("username"),
+                        rs.getString("password"),
+                        rs.getString("bio")
+                );
+            }
+        }
+        return null;
+    }
+    public User findById(long userId) throws SQLException {
+        try (PreparedStatement statement = Datasource.getConnection().prepareStatement(FIND_BY_USER_ID)) {
+            statement.setLong(1, userId);
             ResultSet rs = statement.executeQuery();
             if (rs.next()) {
                 return new User(
