@@ -7,7 +7,7 @@ import entities.Tweet;
 import repository.TagRepository;
 import repository.TweetRepository;
 import repository.LikesRepository;
-import service.UserService;
+
 
 import java.sql.SQLException;
 
@@ -24,6 +24,7 @@ public class TweetService {
     private UserService userService;
     private final Scanner scanner;
     private final TagRepository tagRepository;
+    private LikeService likeService;
     private final List<Tweet> tweets;
 
     public TweetService(TweetRepository tweetRepository, LikesRepository likesRepository, UserService userService, TagRepository tagRepository) {
@@ -32,7 +33,9 @@ public class TweetService {
         this.userService = userService;
         this.tagRepository = tagRepository;
         this.scanner = new Scanner(System.in);
+        this.likeService = new LikeService();
         this.tweets = new ArrayList<>();
+
     }
 
     public void postTweet() throws SQLException {
@@ -116,6 +119,7 @@ public class TweetService {
         }
         System.out.println("Enter tweet ID for Reaction: ");
         int tweetid = scanner.nextInt();
+        likeService.likeOrDislikeTweet(tweetid, (int) loggedInUser.getId());
     }
 
 public void displayUserTweets(int userId) throws SQLException {
