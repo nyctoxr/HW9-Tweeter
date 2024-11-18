@@ -27,6 +27,14 @@ public class UserRepository {
             SELECT * FROM users
             WHERE id = ?
             """;
+    private static final String EDIT_USER = """  
+            UPDATE users
+            SET displayname = ?,
+                username = ?,
+                password = ?,
+                bio = ?
+            WHERE id = ?
+            """;
 
     public User save(User user) throws SQLException {
         try (PreparedStatement statement = Datasource.getConnection().prepareStatement(INSERT_SQL)) {
@@ -88,22 +96,14 @@ public class UserRepository {
         return null;
     }
 
-    public static List<User> findAll() throws SQLException {
-        try (PreparedStatement statement = Datasource.getConnection().prepareStatement(READ_USERS)) {
-            ResultSet rs = statement.executeQuery();
-            List<User> users = new ArrayList<>();
-            while (rs.next()) {
-                int userid = rs.getInt("id");
-                String displayname = rs.getString("displayname");
-                String email = rs.getString("email");
-                String username = rs.getString("username");
-                String password = rs.getString("password");
-                String bio = rs.getString("bio");
-                users.add(new User(userid, displayname, email, username, password, bio));
-            }
-            return new ArrayList<>(users);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+    public void updateUser(User user) throws SQLException {
+        try (PreparedStatement statement = Datasource.getConnection().prepareStatement(EDIT_USER)) {
+            statement.setString(1, user.getDisplayName());
+            statement.setString(2, user.getUsername());
+            statement.setString(3, user.getBio());
+            statement.setString(4, user.getPassword());
+            statement.setInt(5, user.getId());
+            statement.executeUpdate();
         }
     }
 }

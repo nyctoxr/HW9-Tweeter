@@ -1,7 +1,7 @@
 package Tweeter;
 
 import entities.User;
-import entities.Tweet;
+
 import repository.LikesRepository;
 import repository.TagRepository;
 import repository.TweetRepository;
@@ -9,8 +9,6 @@ import repository.UserRepository;
 import service.TweetService;
 import service.UserService;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Scanner;
 
@@ -67,8 +65,7 @@ public class Main {
                     tweetsMenu(user.getId());
                     break;
                 case 4:
-
-                    System.out.println("Edit your profile");
+                    userService.editUserProfile();
                     break;
                 case 5:
                     userService.logout();
@@ -111,7 +108,7 @@ public class Main {
                 default:
                     System.out.println("Invalid choice. Please try again.");
             }
-
         }
     }
+
 }

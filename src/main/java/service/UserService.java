@@ -55,9 +55,56 @@ public class UserService {
         loggedInUser = null;
         System.out.println("logged out successfully");
     }
+
+    public void editUserProfile() throws SQLException {
+        boolean editing = true;
+
+        while (editing) {
+            System.out.println("What do you want to edit:");
+            System.out.println("1. Display Name (current: " + loggedInUser.getDisplayName() + ")");
+            System.out.println("2. Username (current: " + loggedInUser.getUsername() + ")");
+            System.out.println("3. Bio (current: " + loggedInUser.getBio() + ")");
+            System.out.println("4. Password");
+            System.out.println("5. Exit");
+
+            int choice = scanner.nextInt();
+            scanner.nextLine();
+
+            switch (choice) {
+                case 1:
+                    System.out.print("Enter new display name: ");
+                    String newDisplayName = scanner.nextLine();
+                    loggedInUser.setDisplayName(newDisplayName);
+                    break;
+                case 2:
+                    System.out.print("Enter new username: ");
+                    String newUsername = scanner.nextLine();
+                    loggedInUser.setUsername(newUsername);
+                    break;
+                case 3:
+                    System.out.print("Enter new bio: ");
+                    String newBio = scanner.nextLine();
+                    loggedInUser.setBio(newBio);
+                    break;
+                case 4:
+                    System.out.print("Enter new password: ");
+                    String newPassword = scanner.nextLine();
+                    loggedInUser.setPassword(newPassword);
+                    break;
+                case 5:
+                    editing = false;
+                    continue;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+                    continue;
+            }
+
+            userRepository.updateUser(loggedInUser);
+            System.out.println("Profile updated successfully. You can edit another field or exit.");
+        }
+    }
+
     public User getLoggedInUser() {
         return loggedInUser;
     }
-
-
 }
