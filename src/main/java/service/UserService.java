@@ -1,6 +1,7 @@
 package service;
 
 import entities.User;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import repository.UserRepository;
 
 import java.sql.SQLException;
@@ -9,11 +10,21 @@ import java.util.Scanner;
 public class UserService {
     public static User loggedInUser;
     private final UserRepository userRepository;
-    private Scanner scanner;
+    private final Scanner scanner;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
         this.scanner = new Scanner(System.in);
+        this.passwordEncoder = new BCryptPasswordEncoder();
+    }
+
+    public String hashPassword(String password) {
+        return passwordEncoder.encode(password);
+    }
+
+    private boolean checkPassword(String password, String hashedPassword) {
+        return passwordEncoder.matches(password, hashedPassword);
     }
 
     public void registerUser() throws SQLException {
@@ -33,7 +44,8 @@ public class UserService {
             registerUser();
         }
         else {
-            User user = new User(displayname, email, username, password, bio);
+            String hashedPassword = hashPassword(password);
+            User user = new User(displayname, email, username, hashedPassword, bio);
             userRepository.save(user);
             System.out.println("registered successfully");
         }
@@ -43,7 +55,7 @@ public class UserService {
     public boolean login(String identifier, String password) throws SQLException {
 
         User user = userRepository.findByUsernameOrEmail(identifier);
-        if (user != null && user.getPassword().equals(password)) {
+        if (user != null && checkPassword(password, user.getPassword())) {
             loggedInUser= user ;
             System.out.println("logged in successfully");
             return true;
@@ -51,7 +63,7 @@ public class UserService {
         System.out.println("username or password doesn't match");
         return false;
     }
-    public void logout() throws SQLException {
+    public void logout() {
         loggedInUser = null;
         System.out.println("logged out successfully");
     }
