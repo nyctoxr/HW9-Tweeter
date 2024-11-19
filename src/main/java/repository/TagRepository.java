@@ -37,22 +37,6 @@ public class TagRepository {
         }
     }
 
-    public List<Tags> getTagsByTweetId(long tweetId) throws SQLException {
-        List<Tags> tags = new ArrayList<>();
-        try (var statement = Datasource.getConnection().prepareStatement(READ_TAGS_BY_TWEET_ID)) {
-            statement.setLong(1, tweetId);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    int id = resultSet.getInt("id");
-                    String name = resultSet.getString("name");
-                    int tagTweetId = resultSet.getInt("tweet_id");
-                    tags.add(new Tags(id, name, tagTweetId));
-                }
-            }
-        }
-        return tags;
-    }
-
     public List<Tags> getAllTags() throws SQLException {
         List<Tags> tags = new ArrayList<>();
         try (var statement = Datasource.getConnection().prepareStatement(READ_ALL_TAGS)) {
