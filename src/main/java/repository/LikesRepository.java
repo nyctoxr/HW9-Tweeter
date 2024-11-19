@@ -1,7 +1,6 @@
 package repository;
 
 import Tweeter.Datasource;
-import entities.User;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -29,15 +28,14 @@ public class LikesRepository {
             WHERE tweet_id = ? AND user_id = ?
             """;
 
-    public User save(long tweetId, long userId, boolean isLike) throws SQLException {
+    public void save(long tweetId, long userId, boolean isLike) throws SQLException {
 
         try (var statement = Datasource.getConnection().prepareStatement(INSERT_SQL)) {
             statement.setLong(1, tweetId);
             statement.setLong(2, userId);
             statement.setBoolean(3, isLike);
-            statement.execute();
+            statement.executeUpdate();
         }
-        return null;
     }
     public void delete(int tweetId, int userId) throws SQLException {
         try (var statement = Datasource.getConnection().prepareStatement(REMOVE_SQL)) {
@@ -60,7 +58,7 @@ public class LikesRepository {
             return rs.next() ? rs.getInt(1) : 0;
         }
     }
-    public static boolean GetLikeStatus(int tweetid, int userid) throws SQLException {
+    public static boolean getLikeStatus(int tweetid, int userid) throws SQLException {
         try (var statement = Datasource.getConnection().prepareStatement(GET_LIKE_STATUS)) {
             statement.setLong(1, tweetid);
             statement.setInt(2, userid);

@@ -22,7 +22,7 @@ public class LikeService {
 
 
     public void likeOrDislikeTweet(int tweetId, int userId) throws SQLException {
-        boolean currentStatus = LikesRepository.GetLikeStatus(tweetId, userId);
+        boolean currentStatus = LikesRepository.getLikeStatus(tweetId, userId);
 
         if (!currentStatus) {
             System.out.println("Do you want to like (L) or dislike (D) the tweet? (Enter 'L' or 'D'): ");

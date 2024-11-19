@@ -14,13 +14,17 @@ public class Tweet {
     private long userId;
     private Date createdAt;
     private List<Tags> tags;
+    private boolean isRetweet;
+    private Long originalTweetId;
 
-    public Tweet(long id,String content,long userId,Date createdAt,List<Tags> tags) {
+    public Tweet(long id,String content,long userId,Date createdAt,List<Tags> tags,boolean isRetweet,Long originalTweetId) {
         this.id = id;
         this.content = content;
         this.userId = userId;
         this.createdAt = createdAt;
         this.tags = tags;
+        this.isRetweet = isRetweet;
+        this.originalTweetId = originalTweetId;
     }
     public Tweet(String content,long userId,Date createdAt,List<Tags> tags) {
         this.content = content;

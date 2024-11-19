@@ -2,10 +2,8 @@ package Tweeter;
 
 import entities.User;
 
-import repository.LikesRepository;
-import repository.TagRepository;
-import repository.TweetRepository;
-import repository.UserRepository;
+import repository.*;
+import service.RetweetService;
 import service.TweetService;
 import service.UserService;
 
@@ -15,7 +13,9 @@ import java.util.Scanner;
 public class Main {
     static UserRepository userRepository = new UserRepository();
     static UserService userService = new UserService(userRepository);
-    static TweetService tweetService = new TweetService(new TweetRepository(), new LikesRepository(), userService, new TagRepository());
+    static RetweetRepository retweetRepository = new RetweetRepository();
+    static RetweetService retweetService= new RetweetService(retweetRepository);
+    static TweetService tweetService = new TweetService(new TweetRepository(), new LikesRepository(), userService,retweetService ,new TagRepository());
     static Scanner scanner = new Scanner(System.in);
 
     public static void main(String[] args) throws SQLException {
@@ -42,7 +42,6 @@ public class Main {
 
     public static void accountMenu(User user) throws SQLException {
         while (true) {
-
             System.out.println("1. View all tweets");
             System.out.println("2. Post a tweet");
             System.out.println("3. View your tweets");
@@ -55,6 +54,7 @@ public class Main {
             switch (choice) {
                 case 1:
                     tweetService.displayAllTweets();
+                    performRetweet(user);
                     break;
                 case 2:
                     tweetService.postTweet();
@@ -62,7 +62,7 @@ public class Main {
                 case 3:
                     tweetService.displayUserTweets(user.getId());
                     System.out.println("       ------       ");
-                    tweetsMenu(user.getId());
+                    tweetsMenu(user);
                     break;
                 case 4:
                     userService.editUserProfile();
@@ -75,9 +75,20 @@ public class Main {
             }
         }
     }
-    public static void tweetsMenu(int userId) throws SQLException {
+
+    private static void performRetweet(User user) throws SQLException {
+        System.out.print("Enter the Tweet ID you want to retweet (or type -1 to skip): ");
+        long tweetIdToRetweet = scanner.nextLong();
+        scanner.nextLine();
+        if (tweetIdToRetweet != -1) {
+            tweetService.retweet(tweetIdToRetweet, user.getId());
+            System.out.println("Tweet retweeted successfully!");
+        }
+    }
+
+    public static void tweetsMenu(User user) throws SQLException {
         while (true) {
-            System.out.println("1. Retweet (Coming soon)");
+            System.out.println("1. Retweet");
             System.out.println("2. Edit a tweet");
             System.out.println("3. Delete a tweet");
             System.out.println("4. Back to main menu");
@@ -87,21 +98,22 @@ public class Main {
 
             switch (choice) {
                 case 1:
-                    System.out.println("Retweet.");
+                    tweetService.displayUserTweets(user.getId());
+                    performRetweet(user);
                     break;
                 case 2:
-                    tweetService.displayUserTweets(userId);
+                    tweetService.displayUserTweets(user.getId());
                     System.out.print("Enter the tweet ID you want to edit: ");
                     int tweetIdToEdit = scanner.nextInt();
                     scanner.nextLine();
-                    tweetService.editUserTweets(userId,tweetIdToEdit);
+                    tweetService.editUserTweets(user.getId(), tweetIdToEdit);
                     break;
                 case 3:
-                    tweetService.displayUserTweets(userId);
+                    tweetService.displayUserTweets(user.getId());
                     System.out.print("Enter the tweet ID you want to delete: ");
                     int tweetIdToDelete = scanner.nextInt();
                     scanner.nextLine();
-                    tweetService.deleteTweet(tweetIdToDelete, userId);
+                    tweetService.deleteTweet(tweetIdToDelete, user.getId());
                     break;
                 case 4:
                     return;

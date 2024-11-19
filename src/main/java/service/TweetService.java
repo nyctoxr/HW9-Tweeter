@@ -23,17 +23,19 @@ import static service.UserService.loggedInUser;
 public class TweetService {
     TweetRepository tweetRepository = new TweetRepository();
     private final LikesRepository likesRepository;
-    private UserService userService;
+    private final UserService userService;
+    private RetweetService retweetService;
     private final Scanner scanner;
     private final TagRepository tagRepository;
-    private LikeService likeService;
-    private UserRepository userRepository;
+    private final LikeService likeService;
+    private final UserRepository userRepository;
     private final List<Tweet> tweets;
 
-    public TweetService(TweetRepository tweetRepository, LikesRepository likesRepository, UserService userService, TagRepository tagRepository) {
+    public TweetService(TweetRepository tweetRepository, LikesRepository likesRepository, UserService userService, RetweetService retweetService, TagRepository tagRepository) {
         this.tweetRepository = tweetRepository;
         this.likesRepository = likesRepository;
         this.userService = userService;
+        this.retweetService = retweetService;
         this.tagRepository = tagRepository;
         this.scanner = new Scanner(System.in);
         this.likeService = new LikeService();
@@ -116,16 +118,24 @@ public class TweetService {
         List<Tweet> allTweets = tweetRepository.getAllTweets();
         for (Tweet tweet : allTweets) {
             List<String> tags = tagRepository.getTagNamesByTweetId((int) tweet.getId());
-
             int likes = likesRepository.countLikes(tweet.getId());
             int dislikes = likesRepository.countDislikes(tweet.getId());
             User user = userRepository.findById(tweet.getUserId());
-            System.out.println("\n\n"+"Tweet ID: " + tweet.getId() +  ", Content: " + tweet.getContent() + "  , Tags: " + tags + "\n UserName: " + user.getUsername()  + ", Likes: " + likes + ", Dislikes: " + dislikes + "\n Created At: " + tweet.getCreatedAt()) ;
+
+            System.out.println("\n\n" + "Tweet ID: " + tweet.getId() +
+                    ", Content: " + tweet.getContent() +
+                    ", Tags: " + tags +
+                    "\nUser Name: " + user.getUsername() +
+                    ", Likes: " + likes +
+                    ", Dislikes: " + dislikes +
+                    "\nCreated At: " + tweet.getCreatedAt());
+
+            if (tweet.isRetweet()) {
+                System.out.println("This is a retweet of tweet ID: " + tweet.getOriginalTweetId());
+            }
         }
-        System.out.println("Enter tweet ID for Reaction: ");
-        int tweetid = scanner.nextInt();
-        likeService.likeOrDislikeTweet(tweetid, (int) loggedInUser.getId());
     }
+
 
 public void displayUserTweets(int userId) throws SQLException {
     List<Tweet> userTweets = tweetRepository.getTweetByUserId(userId);
@@ -133,9 +143,14 @@ public void displayUserTweets(int userId) throws SQLException {
         List<String > tags = tagRepository.getTagNamesByTweetId((int) tweet.getId());
         int likes = likesRepository.countLikes(tweet.getId());
         int dislikes = likesRepository.countDislikes(tweet.getId());
-        System.out.println("\n"+"Tweet ID: " + tweet.getId() +  ", Content: " + tweet.getContent() + "  , Tags: " + tags  + "\nLikes: " + likes + ", Dislikes: " + dislikes + "\n Created At: " + tweet.getCreatedAt());
-        }
+        System.out.println("\n\n" + "Tweet ID: " + tweet.getId() +
+                ", Content: " + tweet.getContent() +
+                ", Tags: " + tags +
+                "\n Likes: " + likes +
+                ", Dislikes: " + dislikes +
+                "\nCreated At: " + tweet.getCreatedAt());        }
     }
+
     public void editUserTweets(int userId, int tweetId) throws SQLException {
         Tweet userTweet = tweetRepository.getTweetByTweetId(userId);
         if (userTweet.getId() == tweetId) {
@@ -156,5 +171,8 @@ public void displayUserTweets(int userId) throws SQLException {
         } else {
             System.out.println("You are not authorized to delete this tweet.");
         }
+    }
+    public void retweet(long tweetId, long userId) throws SQLException {
+        retweetService.retweet(tweetId, userId);
     }
 }

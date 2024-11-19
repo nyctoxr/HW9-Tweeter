@@ -101,7 +101,8 @@ public class UserService {
                 case 4:
                     System.out.print("Enter new password: ");
                     String newPassword = scanner.nextLine();
-                    loggedInUser.setPassword(newPassword);
+                    String hashedPassword = hashPassword(newPassword);
+                    loggedInUser.setPassword(hashedPassword);
                     break;
                 case 5:
                     editing = false;
