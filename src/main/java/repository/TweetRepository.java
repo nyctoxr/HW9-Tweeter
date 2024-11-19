@@ -16,9 +16,7 @@ public class TweetRepository {
             INSERT INTO tweets(content,user_id,created_at)
             VALUES (?,?,?)
             """;
-    private static final String REMOVE_SQL = """
-            DELETE FROM tweets WHERE id=?
-            """;
+
     private static final String READ_ALL_TWEETS = """
             SELECT * FROM tweets
             LEFT JOIN likes ON tweets.id=likes.tweet_id
@@ -38,7 +36,7 @@ public class TweetRepository {
     private static final String GET_TWEET_BY_TWEET_ID = """
             SELECT * FROM tweets
             LEFT JOIN likes ON tweets.id=likes.tweet_id
-            WHERE tweets.tweet_id=?
+            WHERE tweets.id=?
             """;
 
     private final List<Tweet> tweets = new ArrayList<>();
@@ -112,9 +110,9 @@ public class TweetRepository {
             statement.executeUpdate();
         }
     }
-    public void deleteTweet(long tweetId) throws SQLException {
+    public void deleteTweet(long tweetid) throws SQLException {
         try (var statement = Datasource.getConnection().prepareStatement(DELETE_SQL)) {
-            statement.setLong(1, tweetId);
+            statement.setLong(1, tweetid);
             statement.executeUpdate();
         }
     }

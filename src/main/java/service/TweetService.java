@@ -56,7 +56,7 @@ public class TweetService {
                 System.out.println(tag.getTag_name());
             }
 
-            System.out.println("Please enter tags (one at a time, type 'done' to finish, or 'add' to add a new tag): ");
+            System.out.println("Please enter tags (one at a time, type 'done' to finish): ");
 
             while (true) {
                 String tagName = scanner.nextLine();
@@ -64,14 +64,6 @@ public class TweetService {
                     break;
                 }
 
-                if (tagName.equalsIgnoreCase("add")) {
-                    System.out.println("Please enter the new tag name: ");
-                    String newTagName = scanner.nextLine();
-                    Tags newTag = new Tags(newTagName, 0);
-                    tagRepository.save(newTag);
-                    tags.add(newTag);
-                    continue;
-                }
 
                 addTagIfValid(tags, availableTags, tagName);
             }
@@ -103,6 +95,7 @@ public class TweetService {
             if (tag.getTag_name().equalsIgnoreCase(tagName)) {
                 if (!tagExists) {
                     tags.add(tag);
+                    System.out.println("Tag " + tagName + " added to your tweet.");
                 }
                 tagExists = true;
                 break;
@@ -110,7 +103,7 @@ public class TweetService {
         }
 
         if (!tagExists) {
-            System.out.println("Tag does not exist. Please enter a valid tag or type 'add' to add a new tag.");
+            System.out.println("Tag does not exist. Please enter a valid tag.");
         }
     }
 
