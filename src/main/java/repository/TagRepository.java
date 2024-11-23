@@ -3,6 +3,7 @@ package repository;
 import Tweeter.Datasource;
 import entities.Tags;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -11,29 +12,34 @@ import java.util.List;
 public class TagRepository {
 
     private static final String INSERT_TAG_SQL = """
-            INSERT INTO tags(name, tweet_id)
-            VALUES (?, ?)
-            """;
-    private static final String READ_TAGS_BY_TWEET_ID = """
-            SELECT id, name, tweet_id
-            FROM tags
-            WHERE tweet_id = ?
+            INSERT INTO tags(name)
+            VALUES (?)
+            RETURNING id
             """;
     private static final String READ_ALL_TAGS = """
-            SELECT id, name, tweet_id
+            SELECT id, name
             FROM tags
             """;
     private static final String READ_TAG_NAMES_BY_TWEET_ID = """
-            SELECT name
+            SELECT tags.* FROM tags
+            JOIN tweet_tags ON tags.id = tweet_tags.tag_id
+            WHERE tweet_tags.tweet_id = ?
+            """;
+    private static final String FIND_TAG_BY_NAME= """
+            SELECT *
             FROM tags
-            WHERE tweet_id = ?
+            WHERE name = ?
             """;
 
-    public void save(Tags tag) throws SQLException {
+    public static Tags save(Tags tag) throws SQLException {
         try (var statement = Datasource.getConnection().prepareStatement(INSERT_TAG_SQL)) {
             statement.setString(1, tag.getTag_name());
-            statement.setLong(2, tag.getTweet_id());
-            statement.executeUpdate();
+            try (ResultSet rs = statement.executeQuery()) {
+                if (rs.next()) {
+                    tag.setId(rs.getLong(1));
+                }
+            }
+            return tag;
         }
     }
 
@@ -44,8 +50,7 @@ public class TagRepository {
                 while (resultSet.next()) {
                     int id = resultSet.getInt("id");
                     String name = resultSet.getString("name");
-                    int tagTweetId = resultSet.getInt("tweet_id");
-                    tags.add(new Tags(id, name, tagTweetId));
+                    tags.add(new Tags(id, name));
                 }
             }
         }
@@ -54,7 +59,7 @@ public class TagRepository {
 
 public List<String> getTagNamesByTweetId(int tweetId) throws SQLException {
     List<String> tagNames = new ArrayList<>();
-    try (var statement = Datasource.getConnection().prepareStatement(READ_TAG_NAMES_BY_TWEET_ID)) {
+    try (PreparedStatement statement = Datasource.getConnection().prepareStatement(READ_TAG_NAMES_BY_TWEET_ID)) {
         statement.setInt(1, tweetId);
         try (ResultSet resultSet = statement.executeQuery()) {
             while (resultSet.next()) {
@@ -64,5 +69,18 @@ public List<String> getTagNamesByTweetId(int tweetId) throws SQLException {
         }
     }
     return tagNames;
-}
+    }
+
+    public Tags findTagByName(String name) throws SQLException {
+        try (PreparedStatement statement = Datasource.getConnection().prepareStatement(FIND_TAG_BY_NAME)) {
+            statement.setString(1, name);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return new Tags(resultSet.getInt("id"), resultSet.getString("name"));
+                }
+            }
+        }
+        return null;
+    }
+
 }

@@ -9,22 +9,20 @@ import java.util.List;
 @Getter
 @Setter
 public class Tweet {
-    private long id;
+    private int id;
     private String content;
     private long userId;
     private Date createdAt;
     private List<Tags> tags;
-    private boolean isRetweet;
-    private Long originalTweetId;
 
-    public Tweet(long id,String content,long userId,Date createdAt,List<Tags> tags,boolean isRetweet,Long originalTweetId) {
+
+    public Tweet(int id,String content,long userId,Date createdAt,List<Tags> tags) {
         this.id = id;
         this.content = content;
         this.userId = userId;
         this.createdAt = createdAt;
         this.tags = tags;
-        this.isRetweet = isRetweet;
-        this.originalTweetId = originalTweetId;
+
     }
     public Tweet(String content,long userId,Date createdAt,List<Tags> tags) {
         this.content = content;

@@ -29,5 +29,4 @@ public class User {
         this.password = password;
         this.bio = bio;
     }
-
 }

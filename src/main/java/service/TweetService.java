@@ -5,10 +5,7 @@ import Tweeter.Main;
 import entities.Tags;
 import entities.Tweet;
 import entities.User;
-import repository.TagRepository;
-import repository.TweetRepository;
-import repository.LikesRepository;
-import repository.UserRepository;
+import repository.*;
 
 
 import java.sql.SQLException;
@@ -21,58 +18,46 @@ import java.util.Scanner;
 import static service.UserService.loggedInUser;
 
 public class TweetService {
-    TweetRepository tweetRepository = new TweetRepository();
-    private final LikesRepository likesRepository;
-    private final UserService userService;
-    private RetweetService retweetService;
-    private final Scanner scanner;
+    private final TweetRepository tweetRepository;
     private final TagRepository tagRepository;
+    private TweetTagsRepository tweetTagsRepository;
+    private final LikesRepository likesRepository;
+    private final Scanner scanner;
     private final LikeService likeService;
     private final UserRepository userRepository;
-    private final List<Tweet> tweets;
 
-    public TweetService(TweetRepository tweetRepository, LikesRepository likesRepository, UserService userService, RetweetService retweetService, TagRepository tagRepository) {
+    public TweetService(TweetRepository tweetRepository, LikesRepository likesRepository, TagRepository tagRepository) {
         this.tweetRepository = tweetRepository;
         this.likesRepository = likesRepository;
-        this.userService = userService;
-        this.retweetService = retweetService;
         this.tagRepository = tagRepository;
+        this.tweetTagsRepository = new TweetTagsRepository();
         this.scanner = new Scanner(System.in);
         this.likeService = new LikeService();
         this.userRepository = new UserRepository();
-        this.tweets = new ArrayList<>();
-
     }
 
     public void postTweet() throws SQLException {
         System.out.println("Please enter your tweet content: ");
         String content = scanner.nextLine();
         if (content.length() <= 280) {
-            List<Tags> tags = new ArrayList<>();
-            List<Tags> availableTags = tagRepository.getAllTags();
-
-            System.out.println("Available tags:");
-            for (Tags tag : availableTags) {
-                System.out.println(tag.getTag_name());
-            }
-
+            List<String> tagNames = new ArrayList<>();
             System.out.println("Please enter tags (one at a time, type 'done' to finish): ");
-
             while (true) {
                 String tagName = scanner.nextLine();
                 if (tagName.equalsIgnoreCase("done")) {
                     break;
                 }
-
-
-                addTagIfValid(tags, availableTags, tagName);
+                tagNames.add(tagName);
             }
-
-            Tweet tweet = new Tweet(content, loggedInUser.getId(), new Date(), tags);
+            Tweet tweet = new Tweet( content, loggedInUser.getId(), new Date(), new ArrayList<>());
             tweet = tweetRepository.save(tweet);
-            for (Tags tag : tags) {
-                tag.setTweet_id(tweet.getId());
-                tagRepository.save(tag);
+            for (String tagName : tagNames) {
+                Tags tag = tagRepository.findTagByName(tagName);
+                if (tag == null) {
+                    tag = new Tags(tagName);
+                    tagRepository.save(tag);
+                }
+                tweetTagsRepository.associateTagWithTweet((int) tag.getId(), (int) tweet.getId());
             }
         } else {
             System.out.println("Tweet has to be less than 280 characters!");
@@ -80,37 +65,10 @@ public class TweetService {
         }
     }
 
-    private void addTagIfValid(List<Tags> tags, List<Tags> availableTags, String tagName) {
-        boolean tagExists = false;
-
-        for (Tags tag : tags) {
-            if (tag.getTag_name().equalsIgnoreCase(tagName)) {
-                tagExists = true;
-                break;
-            }
-        }
-
-
-        for (Tags tag : availableTags) {
-            if (tag.getTag_name().equalsIgnoreCase(tagName)) {
-                if (!tagExists) {
-                    tags.add(tag);
-                    System.out.println("Tag " + tagName + " added to your tweet.");
-                }
-                tagExists = true;
-                break;
-            }
-        }
-
-        if (!tagExists) {
-            System.out.println("Tag does not exist. Please enter a valid tag.");
-        }
-    }
-
     public void displayAllTweets() throws SQLException {
         List<Tweet> allTweets = tweetRepository.getAllTweets();
         for (Tweet tweet : allTweets) {
-            List<String> tags = tagRepository.getTagNamesByTweetId((int) tweet.getId());
+            List<Tags> tags = tweetTagsRepository.findTagsByTweetId(tweet.getId());
             int likes = likesRepository.countLikes(tweet.getId());
             int dislikes = likesRepository.countDislikes(tweet.getId());
             User user = userRepository.findById(tweet.getUserId());
@@ -122,27 +80,29 @@ public class TweetService {
                     ", Likes: " + likes +
                     ", Dislikes: " + dislikes +
                     "\nCreated At: " + tweet.getCreatedAt());
-
-            if (tweet.isRetweet()) {
-                System.out.println("This is a retweet of tweet ID: " + tweet.getOriginalTweetId());
-            }
         }
+        System.out.println("Enter tweet ID for Reaction: ");
+        int tweetid = scanner.nextInt();
+        likeService.likeOrDislikeTweet(tweetid,loggedInUser.getId());
+
     }
 
 
 public void displayUserTweets(int userId) throws SQLException {
-    List<Tweet> userTweets = tweetRepository.getTweetByUserId(userId);
+    List<Tweet> userTweets = tweetRepository.findTweetsByUserId(userId);
     for (Tweet tweet : userTweets) {
-        List<String > tags = tagRepository.getTagNamesByTweetId((int) tweet.getId());
+        List<Tags> tags = tweetTagsRepository.findTagsByTweetId(tweet.getId());
+        tweet.setTags(tags);
         int likes = likesRepository.countLikes(tweet.getId());
         int dislikes = likesRepository.countDislikes(tweet.getId());
-        System.out.println("\n\n" + "Tweet ID: " + tweet.getId() +
+        System.out.println("\n\nTweet ID: " + tweet.getId() +
                 ", Content: " + tweet.getContent() +
                 ", Tags: " + tags +
-                "\n Likes: " + likes +
+                "\nLikes: " + likes +
                 ", Dislikes: " + dislikes +
-                "\nCreated At: " + tweet.getCreatedAt());        }
+                "\nCreated At: " + tweet.getCreatedAt());
     }
+}
 
     public void editUserTweets(int userId, int tweetId) throws SQLException {
         Tweet userTweet = tweetRepository.getTweetByTweetId(userId);
@@ -159,13 +119,11 @@ public void displayUserTweets(int userId) throws SQLException {
     public void deleteTweet(int tweetId, int userId) throws SQLException {
         Tweet tweet = tweetRepository.getTweetByTweetId(tweetId);
         if (tweet != null && tweet.getUserId() == userId) {
+            tweetTagsRepository.removeTagsFromTweet(tweetId);
             tweetRepository.deleteTweet(tweetId);
             System.out.println("Tweet deleted successfully.");
         } else {
             System.out.println("You are not authorized to delete this tweet.");
         }
-    }
-    public void retweet(long tweetId, long userId) throws SQLException {
-        retweetService.retweet(tweetId, userId);
     }
 }

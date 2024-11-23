@@ -12,7 +12,7 @@ public class LikesRepository {
         ON CONFLICT (tweet_id, user_id) DO UPDATE SET is_like = EXCLUDED.is_like
         """;
     private static final String REMOVE_SQL = """
-            DELETE FROM likes 
+            DELETE FROM likes
             WHERE tweet_id = ? AND user_id = ?
             """;
     private static final String COUNT_LIKES = """

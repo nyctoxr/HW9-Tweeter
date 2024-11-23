@@ -3,6 +3,7 @@ package repository;
 import Tweeter.Datasource;
 import entities.Tweet;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ public class TweetRepository {
     private static final String INSERT_SQL = """
             INSERT INTO tweets(content,user_id,created_at)
             VALUES (?,?,?)
+            RETURNING id
             """;
 
     private static final String READ_ALL_TWEETS = """
@@ -38,6 +40,12 @@ public class TweetRepository {
             LEFT JOIN likes ON tweets.id=likes.tweet_id
             WHERE tweets.id=?
             """;
+    private static final String FIND_TWEETS_BY_USER_ID = """ 
+            SELECT *
+            FROM tweets
+            WHERE user_id = ?
+            """;
+
 
     private final List<Tweet> tweets = new ArrayList<>();
 
@@ -47,7 +55,11 @@ public class TweetRepository {
             statement.setString(1, tweet.getContent());
             statement.setLong(2, tweet.getUserId());
             statement.setTimestamp(3, new java.sql.Timestamp(tweet.getCreatedAt().getTime()));
-            statement.execute();
+            try(var resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    tweet.setId(resultSet.getLong("id"));
+                }
+            }
         }
         return tweet;
     }
@@ -115,6 +127,26 @@ public class TweetRepository {
             statement.setLong(1, tweetid);
             statement.executeUpdate();
         }
+    }
+
+    public List<Tweet> findTweetsByUserId(int userId) throws SQLException {
+        List<Tweet> tweets = new ArrayList<>();
+        try (PreparedStatement statement = Datasource.getConnection().prepareStatement(FIND_TWEETS_BY_USER_ID)) {
+            statement.setInt(1, userId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    Tweet tweet = new Tweet(
+                            resultSet.getInt("id"),
+                            resultSet.getString("content"),
+                            resultSet.getInt("user_id"),
+                            resultSet.getTimestamp("created_at"),
+                            new ArrayList<>()
+                    );
+                    tweets.add(tweet);
+                }
+            }
+        }
+        return tweets;
     }
 }
 

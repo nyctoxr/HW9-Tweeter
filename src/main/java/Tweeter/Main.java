@@ -3,7 +3,7 @@ package Tweeter;
 import entities.User;
 
 import repository.*;
-import service.RetweetService;
+
 import service.TweetService;
 import service.UserService;
 
@@ -13,9 +13,7 @@ import java.util.Scanner;
 public class Main {
     static UserRepository userRepository = new UserRepository();
     static UserService userService = new UserService(userRepository);
-    static RetweetRepository retweetRepository = new RetweetRepository();
-    static RetweetService retweetService= new RetweetService(retweetRepository);
-    static TweetService tweetService = new TweetService(new TweetRepository(), new LikesRepository(), userService,retweetService ,new TagRepository());
+    static TweetService tweetService = new TweetService(new TweetRepository(), new LikesRepository(),new TagRepository());
     static Scanner scanner = new Scanner(System.in);
 
     public static void main(String[] args) throws SQLException {
@@ -54,7 +52,6 @@ public class Main {
             switch (choice) {
                 case 1:
                     tweetService.displayAllTweets();
-                    performRetweet(user);
                     break;
                 case 2:
                     tweetService.postTweet();
@@ -76,15 +73,6 @@ public class Main {
         }
     }
 
-    private static void performRetweet(User user) throws SQLException {
-        System.out.print("Enter the Tweet ID you want to retweet (or type -1 to skip): ");
-        long tweetIdToRetweet = scanner.nextLong();
-        scanner.nextLine();
-        if (tweetIdToRetweet != -1) {
-            tweetService.retweet(tweetIdToRetweet, user.getId());
-            System.out.println("Tweet retweeted successfully!");
-        }
-    }
 
     public static void tweetsMenu(User user) throws SQLException {
         while (true) {
@@ -99,7 +87,6 @@ public class Main {
             switch (choice) {
                 case 1:
                     tweetService.displayUserTweets(user.getId());
-                    performRetweet(user);
                     break;
                 case 2:
                     tweetService.displayUserTweets(user.getId());
@@ -122,5 +109,4 @@ public class Main {
             }
         }
     }
-
 }

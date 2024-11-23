@@ -20,9 +20,6 @@ public class UserRepository {
             SELECT * FROM users
             WHERE username = ? OR email = ?
             """;
-    private static final String READ_USERS = """
-            SELECT * FROM users
-            """;
     private static final String FIND_BY_USER_ID = """
             SELECT * FROM users
             WHERE id = ?
