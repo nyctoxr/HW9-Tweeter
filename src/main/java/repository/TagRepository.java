@@ -57,20 +57,6 @@ public class TagRepository {
         return tags;
     }
 
-public List<String> getTagNamesByTweetId(int tweetId) throws SQLException {
-    List<String> tagNames = new ArrayList<>();
-    try (PreparedStatement statement = Datasource.getConnection().prepareStatement(READ_TAG_NAMES_BY_TWEET_ID)) {
-        statement.setInt(1, tweetId);
-        try (ResultSet resultSet = statement.executeQuery()) {
-            while (resultSet.next()) {
-                String name = resultSet.getString("name");
-                tagNames.add(name);
-            }
-        }
-    }
-    return tagNames;
-    }
-
     public Tags findTagByName(String name) throws SQLException {
         try (PreparedStatement statement = Datasource.getConnection().prepareStatement(FIND_TAG_BY_NAME)) {
             statement.setString(1, name);
@@ -82,5 +68,4 @@ public List<String> getTagNamesByTweetId(int tweetId) throws SQLException {
         }
         return null;
     }
-
 }

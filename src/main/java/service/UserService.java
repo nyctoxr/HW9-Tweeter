@@ -51,7 +51,6 @@ public class UserService {
         }
 
     }
-
     public boolean login(String identifier, String password) throws SQLException {
 
         User user = userRepository.findByUsernameOrEmail(identifier);
@@ -116,7 +115,6 @@ public class UserService {
             System.out.println("Profile updated successfully. You can edit another field or exit.");
         }
     }
-
     public User getLoggedInUser() {
         return loggedInUser;
     }

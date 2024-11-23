@@ -57,7 +57,7 @@ public class TweetService {
                     tag = new Tags(tagName);
                     tagRepository.save(tag);
                 }
-                tweetTagsRepository.associateTagWithTweet((int) tag.getId(), (int) tweet.getId());
+                tweetTagsRepository.associateTagWithTweet((int) tag.getId(), tweet.getId());
             }
         } else {
             System.out.println("Tweet has to be less than 280 characters!");

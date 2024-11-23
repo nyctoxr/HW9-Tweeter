@@ -11,12 +11,12 @@ import java.util.List;
 public class Tweet {
     private int id;
     private String content;
-    private long userId;
+    private int userId;
     private Date createdAt;
     private List<Tags> tags;
 
 
-    public Tweet(int id,String content,long userId,Date createdAt,List<Tags> tags) {
+    public Tweet(int id,String content,int userId,Date createdAt,List<Tags> tags) {
         this.id = id;
         this.content = content;
         this.userId = userId;
@@ -24,7 +24,7 @@ public class Tweet {
         this.tags = tags;
 
     }
-    public Tweet(String content,long userId,Date createdAt,List<Tags> tags) {
+    public Tweet(String content,int userId,Date createdAt,List<Tags> tags) {
         this.content = content;
         this.userId = userId;
         this.createdAt = createdAt;

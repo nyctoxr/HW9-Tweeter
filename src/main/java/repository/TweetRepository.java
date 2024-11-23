@@ -24,11 +24,6 @@ public class TweetRepository {
             LEFT JOIN likes ON tweets.id=likes.tweet_id
             GROUP BY tweets.id ,tweets.user_id,tweets.created_at,likes.id
             """;
-    private static final String GET_TWEETS_BY_USER_ID = """
-            SELECT * FROM tweets
-            LEFT JOIN likes ON tweets.id=likes.tweet_id
-            WHERE tweets.user_id=?
-            """;
     private static final String UPDATE_SQL = """
             UPDATE tweets SET content = ? WHERE id = ?
             """;
@@ -42,8 +37,9 @@ public class TweetRepository {
             """;
     private static final String FIND_TWEETS_BY_USER_ID = """ 
             SELECT *
-            FROM tweets
-            WHERE user_id = ?
+            FROM tweets AS t
+            LEFT JOIN likes AS l ON t.id=l.tweet_id
+            WHERE t.user_id = ?
             """;
 
 
@@ -53,11 +49,11 @@ public class TweetRepository {
 
         try (var statement = Datasource.getConnection().prepareStatement(INSERT_SQL)) {
             statement.setString(1, tweet.getContent());
-            statement.setLong(2, tweet.getUserId());
+            statement.setInt(2, tweet.getUserId());
             statement.setTimestamp(3, new java.sql.Timestamp(tweet.getCreatedAt().getTime()));
             try(var resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
-                    tweet.setId(resultSet.getLong("id"));
+                    tweet.setId(resultSet.getInt("id"));
                 }
             }
         }
@@ -69,9 +65,9 @@ public class TweetRepository {
             try (var statement = Datasource.getConnection().prepareStatement(READ_ALL_TWEETS);
                  ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    long id = resultSet.getInt("id");
+                    int id = resultSet.getInt("id");
                     String content = resultSet.getString("content");
-                    long userId = resultSet.getInt("user_id");
+                    int userId = resultSet.getInt("user_id");
                     java.util.Date createdAt = resultSet.getTimestamp("created_at");
                     Tweet tweet = new Tweet(id, content, userId, createdAt, new ArrayList<>());
                     tweets.add(tweet);
@@ -81,32 +77,14 @@ public class TweetRepository {
         return tweets;
     }
 
-    public List<Tweet> getTweetByUserId(long userId) throws SQLException {
-        List<Tweet> userTweets = new ArrayList<>();
-        try (var statement = Datasource.getConnection().prepareStatement(GET_TWEETS_BY_USER_ID)) {
-            statement.setLong(1, userId);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    long tweetId = resultSet.getLong("id");
-                    String content = resultSet.getString("content");
-                    long tweetUserId = resultSet.getLong("user_id");
-                    java.util.Date createdAt = resultSet.getTimestamp("created_at");
-                    Tweet tweet = new Tweet(tweetId, content, tweetUserId, createdAt, new ArrayList<>());
-                    userTweets.add(tweet);
-                }
-            }
-        }
-        return userTweets;
-    }
-
     public Tweet getTweetByTweetId(long tweetId) throws SQLException {
         try (var statement = Datasource.getConnection().prepareStatement(GET_TWEET_BY_TWEET_ID)) {
             statement.setLong(1, tweetId);
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
-                    long id = resultSet.getLong("id");
+                    int id = resultSet.getInt("id");
                     String content = resultSet.getString("content");
-                    long userId = resultSet.getLong("user_id");
+                    int userId = resultSet.getInt("user_id");
                     Date createdAt = resultSet.getTimestamp("created_at");
                     return new Tweet(id, content, userId, createdAt, new ArrayList<>());
                 }
