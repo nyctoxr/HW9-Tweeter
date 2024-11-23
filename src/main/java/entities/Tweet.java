@@ -14,21 +14,24 @@ public class Tweet {
     private int userId;
     private Date createdAt;
     private List<Tags> tags;
+    private Integer retweetId;
 
 
-    public Tweet(int id,String content,int userId,Date createdAt,List<Tags> tags) {
+    public Tweet(int id,String content,int userId,Date createdAt,List<Tags> tags,Integer retweetId) {
         this.id = id;
         this.content = content;
         this.userId = userId;
         this.createdAt = createdAt;
         this.tags = tags;
+        this.retweetId = retweetId;
 
     }
-    public Tweet(String content,int userId,Date createdAt,List<Tags> tags) {
+    public Tweet(String content,int userId,Date createdAt,List<Tags> tags,Integer retweetId) {
         this.content = content;
         this.userId = userId;
         this.createdAt = createdAt;
         this.tags = tags;
+        this.retweetId = retweetId;
     }
 
 
@@ -38,6 +41,9 @@ public class Tweet {
                 "id=" + id +
                 ", content='" + content + '\'' +
                 ", userId=" + userId +
+                ", createdAt=" + createdAt +
+                ", tags=" + tags +
+                ", retweetId=" + retweetId +
                 '}';
     }
 }

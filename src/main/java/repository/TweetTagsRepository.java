@@ -80,7 +80,8 @@ public class TweetTagsRepository {
                             resultSet.getString("content"),
                             resultSet.getInt("user_id"),
                             resultSet.getTimestamp("created_at"),
-                            new ArrayList<>()
+                            new ArrayList<>(),
+                            resultSet.getInt("retweet_id")
                     );
                     tweets.add(tweet);
                 }

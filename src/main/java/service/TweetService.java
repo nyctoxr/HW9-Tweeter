@@ -15,12 +15,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 
+import static Tweeter.Main.retweetMenu;
 import static service.UserService.loggedInUser;
 
 public class TweetService {
     private final TweetRepository tweetRepository;
     private final TagRepository tagRepository;
-    private TweetTagsRepository tweetTagsRepository;
+    private final TweetTagsRepository tweetTagsRepository;
     private final LikesRepository likesRepository;
     private final Scanner scanner;
     private final LikeService likeService;
@@ -49,7 +50,7 @@ public class TweetService {
                 }
                 tagNames.add(tagName);
             }
-            Tweet tweet = new Tweet( content, loggedInUser.getId(), new Date(), new ArrayList<>());
+            Tweet tweet = new Tweet( content, loggedInUser.getId(), new Date(), new ArrayList<>(),null);
             tweet = tweetRepository.save(tweet);
             for (String tagName : tagNames) {
                 Tags tag = tagRepository.findTagByName(tagName);
@@ -80,10 +81,19 @@ public class TweetService {
                     ", Likes: " + likes +
                     ", Dislikes: " + dislikes +
                     "\nCreated At: " + tweet.getCreatedAt());
+            if (tweet.getRetweetId() != null) {
+                System.out.println("This is a retweet of Tweet ID: " + tweet.getRetweetId());
+            }
         }
-        System.out.println("Enter tweet ID for Reaction: ");
-        int tweetid = scanner.nextInt();
-        likeService.likeOrDislikeTweet(tweetid,loggedInUser.getId());
+        System.out.println("Enter tweet ID for Reaction or type 'skip' to continue ");
+        String reaction = scanner.nextLine();
+        if (reaction.equalsIgnoreCase("skip")) {
+            retweetMenu(loggedInUser);
+        }
+        else {
+            likeService.likeOrDislikeTweet(Integer.parseInt(reaction), loggedInUser.getId());
+            retweetMenu(loggedInUser);
+        }
 
     }
 
@@ -101,6 +111,9 @@ public void displayUserTweets(int userId) throws SQLException {
                 "\nLikes: " + likes +
                 ", Dislikes: " + dislikes +
                 "\nCreated At: " + tweet.getCreatedAt());
+        if (tweet.getRetweetId() != null) {
+            System.out.println("This is a retweet of Tweet ID: " + tweet.getRetweetId());
+        }
     }
 }
 
@@ -124,6 +137,41 @@ public void displayUserTweets(int userId) throws SQLException {
             System.out.println("Tweet deleted successfully.");
         } else {
             System.out.println("You are not authorized to delete this tweet.");
+        }
+    }
+    public void retweet(int originalTweetId, int userId) throws SQLException {
+
+        Tweet originalTweet = tweetRepository.getTweetByTweetId(originalTweetId);
+        if (originalTweet == null) {
+            throw new SQLException("Original tweet not found.");
+        }
+
+        if (originalTweet.getRetweetId() != null) {
+            throw new SQLException("Cannot retweet a retweet.");
+        }
+
+        List<Tags> originalTags = tweetTagsRepository.findTagsByTweetId(originalTweetId);
+        Tweet retweet = new Tweet(
+                originalTweet.getContent(),
+                userId,
+                new Date(),
+                originalTags,
+                originalTweet.getId()
+        );
+        tweetRepository.save(retweet);
+
+        for (Tags tag : originalTags) {
+            tweetTagsRepository.associateTagWithTweet((int) tag.getId(), retweet.getId());
+        }
+        System.out.println("Retweet successful.");
+    }
+
+    public void checkTweetExist(User user, int tweetIdToRetweet) throws SQLException {
+        Tweet tweet = tweetRepository.getTweetByTweetId(tweetIdToRetweet);
+        if (tweet != null && tweet.getUserId() != user.getId()) {
+            retweet(tweetIdToRetweet, user.getId());
+        } else {
+            System.out.println("Invalid tweet selected.");
         }
     }
 }

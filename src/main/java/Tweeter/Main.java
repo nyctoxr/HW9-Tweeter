@@ -1,9 +1,10 @@
 package Tweeter;
 
 import entities.User;
-
-import repository.*;
-
+import repository.LikesRepository;
+import repository.TagRepository;
+import repository.TweetRepository;
+import repository.UserRepository;
 import service.TweetService;
 import service.UserService;
 
@@ -52,6 +53,7 @@ public class Main {
             switch (choice) {
                 case 1:
                     tweetService.displayAllTweets();
+
                     break;
                 case 2:
                     tweetService.postTweet();
@@ -70,6 +72,18 @@ public class Main {
                 default:
                     System.out.println("Invalid choice. Please try again.");
             }
+        }
+    }
+
+    public static void retweetMenu(User user) throws SQLException {
+        System.out.print("Enter the tweet ID to retweet or type 'exit' to exit: ");
+        String tweetIdToRetweet = scanner.nextLine();
+        if (tweetIdToRetweet.equals("exit")) {
+            accountMenu(userService.getLoggedInUser());
+        }
+        else {
+            scanner.nextLine();
+            tweetService.checkTweetExist(user, Integer.parseInt(tweetIdToRetweet));
         }
     }
 
@@ -109,4 +123,6 @@ public class Main {
             }
         }
     }
+
+
 }

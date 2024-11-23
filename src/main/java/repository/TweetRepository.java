@@ -14,15 +14,13 @@ import java.util.List;
 public class TweetRepository {
 
     private static final String INSERT_SQL = """
-            INSERT INTO tweets(content,user_id,created_at)
-            VALUES (?,?,?)
+            INSERT INTO tweets(content,user_id,created_at,retweet_id)
+            VALUES (?,?,?,?)
             RETURNING id
             """;
 
     private static final String READ_ALL_TWEETS = """
-            SELECT * FROM tweets
-            LEFT JOIN likes ON tweets.id=likes.tweet_id
-            GROUP BY tweets.id ,tweets.user_id,tweets.created_at,likes.id
+            Select * from tweets
             """;
     private static final String UPDATE_SQL = """
             UPDATE tweets SET content = ? WHERE id = ?
@@ -51,7 +49,12 @@ public class TweetRepository {
             statement.setString(1, tweet.getContent());
             statement.setInt(2, tweet.getUserId());
             statement.setTimestamp(3, new java.sql.Timestamp(tweet.getCreatedAt().getTime()));
-            try(var resultSet = statement.executeQuery()) {
+            if (tweet.getRetweetId() != null) {
+                statement.setLong(4, tweet.getRetweetId());
+            }else{
+                    statement.setNull(4, java.sql.Types.INTEGER);
+                }
+            try(ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
                     tweet.setId(resultSet.getInt("id"));
                 }
@@ -69,7 +72,11 @@ public class TweetRepository {
                     String content = resultSet.getString("content");
                     int userId = resultSet.getInt("user_id");
                     java.util.Date createdAt = resultSet.getTimestamp("created_at");
-                    Tweet tweet = new Tweet(id, content, userId, createdAt, new ArrayList<>());
+                    Integer retweetId = resultSet.getInt("retweet_id");
+                    if (resultSet.wasNull()) {
+                        retweetId = null;
+                    }
+                    Tweet tweet = new Tweet(id, content, userId, createdAt, new ArrayList<>(), retweetId);
                     tweets.add(tweet);
                 }
             }
@@ -86,7 +93,12 @@ public class TweetRepository {
                     String content = resultSet.getString("content");
                     int userId = resultSet.getInt("user_id");
                     Date createdAt = resultSet.getTimestamp("created_at");
-                    return new Tweet(id, content, userId, createdAt, new ArrayList<>());
+                    Integer retweetId = resultSet.getInt("retweet_id");
+                    if (resultSet.wasNull()) {
+                        retweetId = null;
+                    }
+
+                    return new Tweet(id, content, userId, createdAt, new ArrayList<>(),retweetId);
                 }
             }
         }
@@ -118,7 +130,8 @@ public class TweetRepository {
                             resultSet.getString("content"),
                             resultSet.getInt("user_id"),
                             resultSet.getTimestamp("created_at"),
-                            new ArrayList<>()
+                            new ArrayList<>(),
+                            resultSet.getInt("retweet_id")
                     );
                     tweets.add(tweet);
                 }
