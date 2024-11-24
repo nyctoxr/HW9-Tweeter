@@ -15,7 +15,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 
-import static Tweeter.Main.retweetMenu;
+
 import static service.UserService.loggedInUser;
 
 public class TweetService {
@@ -23,8 +23,6 @@ public class TweetService {
     private final TagRepository tagRepository;
     private final TweetTagsRepository tweetTagsRepository;
     private final LikesRepository likesRepository;
-    private final Scanner scanner;
-    private final LikeService likeService;
     private final UserRepository userRepository;
 
     public TweetService(TweetRepository tweetRepository, LikesRepository likesRepository, TagRepository tagRepository) {
@@ -32,27 +30,14 @@ public class TweetService {
         this.likesRepository = likesRepository;
         this.tagRepository = tagRepository;
         this.tweetTagsRepository = new TweetTagsRepository();
-        this.scanner = new Scanner(System.in);
-        this.likeService = new LikeService();
         this.userRepository = new UserRepository();
     }
 
-    public void postTweet() throws SQLException {
-        System.out.println("Please enter your tweet content: ");
-        String content = scanner.nextLine();
+    public void postTweet(String content, List<String> tags) throws SQLException {
         if (content.length() <= 280) {
-            List<String> tagNames = new ArrayList<>();
-            System.out.println("Please enter tags (one at a time, type 'done' to finish): ");
-            while (true) {
-                String tagName = scanner.nextLine();
-                if (tagName.equalsIgnoreCase("done")) {
-                    break;
-                }
-                tagNames.add(tagName);
-            }
-            Tweet tweet = new Tweet( content, loggedInUser.getId(), new Date(), new ArrayList<>(),null);
+            Tweet tweet = new Tweet(content, loggedInUser.getId(), new Date(), new ArrayList<>(), null);
             tweet = tweetRepository.save(tweet);
-            for (String tagName : tagNames) {
+            for (String tagName : tags) {
                 Tags tag = tagRepository.findTagByName(tagName);
                 if (tag == null) {
                     tag = new Tags(tagName);
@@ -62,7 +47,6 @@ public class TweetService {
             }
         } else {
             System.out.println("Tweet has to be less than 280 characters!");
-            Main.accountMenu(loggedInUser);
         }
     }
 
@@ -74,7 +58,7 @@ public class TweetService {
             int dislikes = likesRepository.countDislikes(tweet.getId());
             User user = userRepository.findById(tweet.getUserId());
 
-            System.out.println("\n\n" + "Tweet ID: " + tweet.getId() +
+            System.out.println("\n\nTweet ID: " + tweet.getId() +
                     ", Content: " + tweet.getContent() +
                     ", Tags: " + tags +
                     "\nUser Name: " + user.getUsername() +
@@ -85,16 +69,6 @@ public class TweetService {
                 System.out.println("This is a retweet of Tweet ID: " + tweet.getRetweetId());
             }
         }
-        System.out.println("Enter tweet ID for Reaction or type 'skip' to continue ");
-        String reaction = scanner.nextLine();
-        if (reaction.equalsIgnoreCase("skip")) {
-            retweetMenu(loggedInUser);
-        }
-        else {
-            likeService.likeOrDislikeTweet(Integer.parseInt(reaction), loggedInUser.getId());
-            retweetMenu(loggedInUser);
-        }
-
     }
 
 
@@ -117,16 +91,14 @@ public void displayUserTweets(int userId) throws SQLException {
     }
 }
 
-    public void editUserTweets(int userId, int tweetId) throws SQLException {
-        Tweet userTweet = tweetRepository.getTweetByTweetId(userId);
-        if (userTweet.getId() == tweetId) {
-            System.out.println("Enter new content for the tweet: ");
-            String newContent = scanner.nextLine();
+    public void editUserTweets(int userId, int tweetId, String newContent) throws SQLException {
+        Tweet userTweet = tweetRepository.getTweetByTweetId(tweetId);
+        if (userTweet != null && userTweet.getUserId() == userId) {
             userTweet.setContent(newContent);
             tweetRepository.updateTweet(userTweet);
             System.out.println("Tweet updated successfully.");
         } else {
-            System.out.println("You are not authorized to edit this tweet.");
+            System.out.println("You are not authorized to edit this tweet or tweet not found.");
         }
     }
     public void deleteTweet(int tweetId, int userId) throws SQLException {
