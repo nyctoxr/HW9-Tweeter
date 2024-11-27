@@ -27,6 +27,7 @@ public class UserRepository {
     private static final String EDIT_USER = """  
             UPDATE users
             SET displayname = ?,
+                email=? ,
                 username = ?,
                 password = ?,
                 bio = ?
@@ -96,10 +97,12 @@ public class UserRepository {
     public void updateUser(User user) throws SQLException {
         try (PreparedStatement statement = Datasource.getConnection().prepareStatement(EDIT_USER)) {
             statement.setString(1, user.getDisplayName());
-            statement.setString(2, user.getUsername());
-            statement.setString(3, user.getBio());
+            statement.setString(2, user.getEmail());
+            statement.setString(3, user.getUsername());
             statement.setString(4, user.getPassword());
-            statement.setInt(5, user.getId());
+            statement.setString(5, user.getBio());
+
+            statement.setInt(6, user.getId());
             statement.executeUpdate();
         }
     }

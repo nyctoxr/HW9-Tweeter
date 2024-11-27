@@ -1,6 +1,7 @@
 package repository;
 
 import Tweeter.Datasource;
+import entities.Tags;
 import entities.Tweet;
 
 import java.sql.PreparedStatement;
@@ -76,6 +77,7 @@ public class TweetRepository {
                     if (resultSet.wasNull()) {
                         retweetId = null;
                     }
+
                     Tweet tweet = new Tweet(id, content, userId, createdAt, new ArrayList<>(), retweetId);
                     tweets.add(tweet);
                 }

@@ -68,38 +68,4 @@ public class TweetTagsRepository {
         }
         return tags;
     }
-
-    public List<Tweet> findTweetsByTagId(int tagId) throws SQLException {
-        List<Tweet> tweets = new ArrayList<>();
-        try (PreparedStatement statement = Datasource.getConnection().prepareStatement(FIND_TWEETS_BY_TAG_ID)) {
-            statement.setInt(1, tagId);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    Tweet tweet = new Tweet(
-                            resultSet.getInt("id"),
-                            resultSet.getString("content"),
-                            resultSet.getInt("user_id"),
-                            resultSet.getTimestamp("created_at"),
-                            new ArrayList<>(),
-                            resultSet.getInt("retweet_id")
-                    );
-                    tweets.add(tweet);
-                }
-            }
-        }
-        return tweets;
-    }
-
-    public boolean isTagAssociatedWithTweet(int tagId, int tweetId) throws SQLException {
-        try (PreparedStatement statement = Datasource.getConnection().prepareStatement(CHECK_ASSOCIATION)) {
-            statement.setInt(1, tweetId);
-            statement.setInt(2, tagId);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    return resultSet.getInt(1) > 0;
-                }
-            }
-        }
-        return false;
-    }
 }

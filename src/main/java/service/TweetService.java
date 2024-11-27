@@ -140,7 +140,7 @@ public void displayUserTweets(int userId) throws SQLException {
 
     public void checkTweetExist(User user, int tweetIdToRetweet) throws SQLException {
         Tweet tweet = tweetRepository.getTweetByTweetId(tweetIdToRetweet);
-        if (tweet != null && tweet.getUserId() != user.getId()) {
+        if (tweet != null) {
             retweet(tweetIdToRetweet, user.getId());
         } else {
             System.out.println("Invalid tweet selected.");

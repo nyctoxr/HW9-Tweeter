@@ -10,6 +10,7 @@ import service.TweetService;
 import service.UserService;
 
 import java.sql.SQLException;
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -110,15 +111,16 @@ public class Main {
                     while (editing) {
                         System.out.println("What do you want to edit:");
                         System.out.println("1. Display Name (current: " + user.getDisplayName() + ")");
-                        System.out.println("2. Username (current: " + user.getUsername() + ")");
-                        System.out.println("3. Bio (current: " + user.getBio() + ")");
-                        System.out.println("4. Password");
-                        System.out.println("5. Exit");
+                        System.out.println("2. Email (current: " + user.getEmail() + ")");
+                        System.out.println("3. Username (current: " + user.getUsername() + ")");
+                        System.out.println("4. Bio (current: " + user.getBio() + ")");
+                        System.out.println("5. Password");
+                        System.out.println("6. Exit");
 
                         int editChoice = scanner.nextInt();
                         scanner.nextLine();
 
-                        if (editChoice == 5) {
+                        if (editChoice == 6) {
                             editing = false;
                             continue;
                         }

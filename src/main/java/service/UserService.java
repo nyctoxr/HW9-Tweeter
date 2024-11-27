@@ -57,15 +57,17 @@ public class UserService {
                 loggedInUser.setDisplayName(newValue);
                 break;
             case 2:
-                loggedInUser.setUsername(newValue);
+                loggedInUser.setEmail(newValue);
                 break;
             case 3:
-                loggedInUser.setBio(newValue);
+                loggedInUser.setUsername(newValue);
                 break;
             case 4:
                 String hashedPassword = hashPassword(newValue);
                 loggedInUser.setPassword(hashedPassword);
                 break;
+            case 5:
+                loggedInUser.setBio(newValue);
             default:
                 System.out.println("Invalid choice. Please try again.");
                 return;
