@@ -4,8 +4,7 @@ import Tweeter.Datasource;
 import entities.User;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+
 
 public class UserRepository {
     private static final String INSERT_SQL = """

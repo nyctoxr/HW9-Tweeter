@@ -1,7 +1,6 @@
 package repository;
 
 import Tweeter.Datasource;
-import entities.Tags;
 import entities.Tweet;
 
 import java.sql.PreparedStatement;
@@ -69,22 +68,40 @@ public class TweetRepository {
             try (var statement = Datasource.getConnection().prepareStatement(READ_ALL_TWEETS);
                  ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    int id = resultSet.getInt("id");
-                    String content = resultSet.getString("content");
-                    int userId = resultSet.getInt("user_id");
-                    java.util.Date createdAt = resultSet.getTimestamp("created_at");
-                    Integer retweetId = resultSet.getInt("retweet_id");
-                    if (resultSet.wasNull()) {
-                        retweetId = null;
-                    }
-
-                    Tweet tweet = new Tweet(id, content, userId, createdAt, new ArrayList<>(), retweetId);
+                    Tweet tweet = new Tweet(resultSet.getInt("id"),
+                            resultSet.getString("content"),
+                            resultSet.getInt("user_id"),
+                            resultSet.getTimestamp("created_at"),
+                            new ArrayList<>(),
+                            resultSet.getInt("retweet_id")
+                    );
                     tweets.add(tweet);
                 }
             }
         }
         return tweets;
     }
+
+    public List<Tweet> findTweetsByUserId(int userId) throws SQLException {
+        try (PreparedStatement statement = Datasource.getConnection().prepareStatement(FIND_TWEETS_BY_USER_ID)) {
+            statement.setInt(1, userId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    Tweet tweet = new Tweet(
+                            resultSet.getInt("id"),
+                            resultSet.getString("content"),
+                            resultSet.getInt("user_id"),
+                            resultSet.getTimestamp("created_at"),
+                            new ArrayList<>(),
+                            resultSet.getInt("retweet_id")
+                    );
+                    tweets.add(tweet);
+                }
+            }
+        }
+        return tweets;
+    }
+
 
     public Tweet getTweetByTweetId(long tweetId) throws SQLException {
         try (var statement = Datasource.getConnection().prepareStatement(GET_TWEET_BY_TWEET_ID)) {
@@ -119,27 +136,6 @@ public class TweetRepository {
             statement.setLong(1, tweetid);
             statement.executeUpdate();
         }
-    }
-
-    public List<Tweet> findTweetsByUserId(int userId) throws SQLException {
-        List<Tweet> tweets = new ArrayList<>();
-        try (PreparedStatement statement = Datasource.getConnection().prepareStatement(FIND_TWEETS_BY_USER_ID)) {
-            statement.setInt(1, userId);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    Tweet tweet = new Tweet(
-                            resultSet.getInt("id"),
-                            resultSet.getString("content"),
-                            resultSet.getInt("user_id"),
-                            resultSet.getTimestamp("created_at"),
-                            new ArrayList<>(),
-                            resultSet.getInt("retweet_id")
-                    );
-                    tweets.add(tweet);
-                }
-            }
-        }
-        return tweets;
     }
 }
 

@@ -2,7 +2,6 @@ package repository;
 
 import Tweeter.Datasource;
 import entities.Tags;
-import entities.Tweet;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

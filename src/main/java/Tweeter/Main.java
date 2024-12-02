@@ -1,6 +1,9 @@
 package Tweeter;
 
 import entities.User;
+import exceptions.CannotBeNullException;
+import exceptions.InvalidInputException;
+import exceptions.UserAlreadyExists;
 import repository.LikesRepository;
 import repository.TagRepository;
 import repository.TweetRepository;
@@ -10,7 +13,6 @@ import service.TweetService;
 import service.UserService;
 
 import java.sql.SQLException;
-import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -22,35 +24,51 @@ public class Main {
     static LikeService likeService = new LikeService();
     static Scanner scanner = new Scanner(System.in);
 
-    public static void main(String[] args) throws SQLException {
+    public static void main(String[] args) throws UserAlreadyExists {
         while (true) {
             System.out.println("1. Sign up");
             System.out.println("2. Login");
             System.out.print("Please Enter your choice: ");
-            int choice = scanner.nextInt();
-            scanner.nextLine();
 
-            if (choice == 1) {
-                System.out.println("Please enter your display name: ");
-                String displayName = scanner.nextLine();
-                System.out.println("Please enter your email address: ");
-                String email = scanner.nextLine();
-                System.out.println("Please enter your username: ");
-                String username = scanner.nextLine();
-                System.out.println("Please enter your password: ");
-                String password = scanner.nextLine();
-                System.out.println("Please enter your bio: ");
-                String bio = scanner.nextLine();
-
-                userService.registerUser(displayName, email, username, password, bio);
-            } else if (choice == 2) {
-                System.out.print("Enter email or username to login: ");
-                String identifier = scanner.nextLine();
-                System.out.print("Enter password: ");
-                String password = scanner.nextLine();
-                if (userService.login(identifier, password)) {
-                    accountMenu(userService.getLoggedInUser());
+            try {
+                String input = scanner.nextLine();
+                int choice = Integer.parseInt(input);
+                if (!(choice ==1||choice ==2)) {
+                    throw new InvalidInputException("""
+                            ***You have entered an invalid number!***
+                            ***please Enter 1 or 2***
+                            """);
                 }
+
+                if (choice == 1) {
+                    System.out.println("Please enter your display name: ");
+                    String displayName = scanner.nextLine();
+                    System.out.println("Please enter your email address: ");
+                    String email = scanner.nextLine();
+                    System.out.println("Please enter your username: ");
+                    String username = scanner.nextLine();
+                    System.out.println("Please enter your password: ");
+                    String password = scanner.nextLine();
+                    System.out.println("Please enter your bio: ");
+                    String bio = scanner.nextLine();
+
+                    userService.registerUser(displayName, email, username, password, bio);
+                } else {
+                    System.out.print("Enter email or username to login: ");
+                    String identifier = scanner.nextLine();
+                    System.out.print("Enter password: ");
+                    String password = scanner.nextLine();
+                    if (userService.login(identifier, password)) {
+                        accountMenu(userService.getLoggedInUser());
+                    }
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("""
+                        ***You have entered an invalid choice.***
+                        ***You can only Enter 1 or 2!!!***
+                        """);
+            } catch (InvalidInputException|UserAlreadyExists |SQLException e) {
+                System.out.println(e.getMessage());
             }
         }
     }
@@ -63,41 +81,70 @@ public class Main {
             System.out.println("4. Edit your profile");
             System.out.println("5. Logout");
             System.out.print("Please Enter your choice: ");
-            int choice = scanner.nextInt();
-            scanner.nextLine();
+            int choice;
+            try {
+                choice = Integer.parseInt(scanner.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("***Please enter a number!***");
+                continue;
+            }
 
             switch (choice) {
                 case 1:
-                    tweetService.displayAllTweets();
-                    System.out.println("Enter tweet ID for Reaction or type 'skip' to continue ");
-                    String reaction = scanner.nextLine();
-                    if (!reaction.equalsIgnoreCase("skip")) {
-                        try {
-                            int tweetId = Integer.parseInt(reaction);
-                            System.out.println("Do you want to like (L) or dislike (D) the tweet? (Enter 'L' or 'D'): ");
-                            String likeChoice = scanner.nextLine();
-                            likeService.likeOrDislikeTweet(tweetId, user.getId(), likeChoice);
-                        } catch (NumberFormatException e) {
-                            System.out.println("Invalid tweet ID.");
+                    try {
+                        tweetService.displayAllTweets();
+                        System.out.println("Enter tweet ID for Reaction or type 'skip' to continue ");
+                        String reaction = scanner.nextLine();
+
+                        if (!reaction.equalsIgnoreCase("skip")) {
+                            try {
+                                int tweetId = Integer.parseInt(reaction);
+                                System.out.println("Do you want to like (L) or dislike (D) the tweet? (Enter 'L' or 'D'): ");
+
+                                String likeChoice = scanner.nextLine();
+                                if (likeChoice.equalsIgnoreCase("L") || likeChoice.equalsIgnoreCase("D")) {
+                                    likeService.likeOrDislikeTweet(tweetId, user.getId(), likeChoice);
+                                } else {
+                                    throw new InvalidInputException("***Please enter L or D!!!***");
+                                }
+
+                            } catch (NumberFormatException e) {
+                                System.out.println("***Invalid tweet ID.***");
+                            } catch (SQLException e) {
+                                System.out.println("***There was an error while trying to connect to the database.***");
+                            } catch (InvalidInputException e) {
+                                System.out.println(e.getMessage());
+                            }
                         }
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
                     }
                     retweetMenu(user);
                     break;
                 case 2:
                     System.out.println("Please enter your tweet content: ");
                     String content = scanner.nextLine();
-                    if (content.length() <= 280) {
-                        List<String> tagNames = new ArrayList<>();
-                        System.out.println("Please enter tags (one at a time, type 'done' to finish): ");
-                        while (true) {
-                            String tagName = scanner.nextLine();
-                            if (tagName.equalsIgnoreCase("done")) {
-                                break;
-                            }
-                            tagNames.add(tagName);
+                    try {
+                        if(content.isEmpty()){
+                            throw new CannotBeNullException("Content of your tweet can't be empty!!!");
                         }
+                        if (content.length() <= 280) {
+                            List<String> tagNames = new ArrayList<>();
+                            System.out.println("Please enter tags (one at a time, type 'done' to finish): ");
+                            while (true) {
+                                String tagName = scanner.nextLine();
+                                if (tagName.equalsIgnoreCase("done")) {
+                                    break;
+                                }
+                                tagNames.add(tagName);
+                            }
 
-                       tweetService.postTweet(content, tagNames);
+                           tweetService.postTweet(content, tagNames);
+                        }
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    } catch (CannotBeNullException e) {
+                        System.out.println("***"+e.getMessage()+"***");
                     }
 
                     break;
@@ -117,8 +164,13 @@ public class Main {
                         System.out.println("5. Password");
                         System.out.println("6. Exit");
 
-                        int editChoice = scanner.nextInt();
-                        scanner.nextLine();
+                        int editChoice ;
+                        try {
+                            editChoice= Integer.parseInt(scanner.nextLine());
+                        } catch (NumberFormatException e) {
+                            System.out.println("***Please choose a number!***");
+                            continue;
+                        }
 
                         if (editChoice == 6) {
                             editing = false;
@@ -189,3 +241,4 @@ public class Main {
         }
     }
 }
+

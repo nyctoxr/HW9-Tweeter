@@ -1,20 +1,15 @@
 package service;
 
 
-import Tweeter.Main;
 import entities.Tags;
 import entities.Tweet;
 import entities.User;
 import repository.*;
 
-
 import java.sql.SQLException;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Scanner;
-
 
 import static service.UserService.loggedInUser;
 

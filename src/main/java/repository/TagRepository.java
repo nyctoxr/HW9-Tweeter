@@ -6,8 +6,6 @@ import entities.Tags;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class TagRepository {
 
@@ -22,7 +20,7 @@ public class TagRepository {
             WHERE name = ?
             """;
 
-    public static Tags save(Tags tag) throws SQLException {
+    public static void save(Tags tag) throws SQLException {
         try (var statement = Datasource.getConnection().prepareStatement(INSERT_TAG_SQL)) {
             statement.setString(1, tag.getTag_name());
             try (ResultSet rs = statement.executeQuery()) {
@@ -30,7 +28,6 @@ public class TagRepository {
                     tag.setId(rs.getLong(1));
                 }
             }
-            return tag;
         }
     }
 

@@ -1,11 +1,11 @@
 package service;
 
 import entities.User;
+import exceptions.UserAlreadyExists;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import repository.UserRepository;
 
 import java.sql.SQLException;
-import java.util.Scanner;
 
 public class UserService {
     public static User loggedInUser;
@@ -25,16 +25,18 @@ public class UserService {
         return passwordEncoder.matches(password, hashedPassword);
     }
 
-    public void registerUser(String displayName, String email, String username, String password, String bio) throws SQLException {
-        if (userRepository.isUsernameOrEmailTaken(username, email)) {
-            System.out.println("Username or email already taken");
-        } else {
-            String hashedPassword = hashPassword(password);
-            User user = new User(displayName, email, username, hashedPassword, bio);
-            userRepository.save(user);
-            System.out.println("Registered successfully");
-        }
+    public void registerUser(String displayName, String email, String username, String password, String bio) throws SQLException , UserAlreadyExists {
+
+            if (userRepository.isUsernameOrEmailTaken(username, email)) {
+                throw new UserAlreadyExists("Username or email already exists");
+            } else {
+                String hashedPassword = hashPassword(password);
+                User user = new User(displayName, email, username, hashedPassword, bio);
+                userRepository.save(user);
+                System.out.println("Registered successfully");
+            }
     }
+
     public boolean login(String identifier, String password) throws SQLException {
 
         User user = userRepository.findByUsernameOrEmail(identifier);
