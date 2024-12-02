@@ -160,8 +160,8 @@ public class Main {
                         System.out.println("1. Display Name (current: " + user.getDisplayName() + ")");
                         System.out.println("2. Email (current: " + user.getEmail() + ")");
                         System.out.println("3. Username (current: " + user.getUsername() + ")");
-                        System.out.println("4. Bio (current: " + user.getBio() + ")");
-                        System.out.println("5. Password");
+                        System.out.println("4. Password");
+                        System.out.println("5. Bio (current: " + user.getBio() +")" );
                         System.out.println("6. Exit");
 
                         int editChoice ;

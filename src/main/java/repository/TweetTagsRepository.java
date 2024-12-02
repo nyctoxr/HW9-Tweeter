@@ -21,21 +21,10 @@ public class TweetTagsRepository {
             WHERE tweet_id = ? AND tag_id = ?
             """;
     private static final String FIND_TAGS_BY_TWEET_ID= """
-            SELECT tags.*
+            SELECT name
             FROM tags
             JOIN tweet_tags ON tags.id = tweet_tags.tag_id
             WHERE tweet_tags.tweet_id = ?
-            """;
-    private static final String FIND_TWEETS_BY_TAG_ID= """
-            SELECT tweets.*
-            FROM tweets
-            JOIN tweet_tags ON tweets.id = tweet_tags.tweet_id
-            WHERE tweet_tags.tag_id = ?
-            """;
-    private static final String CHECK_ASSOCIATION= """
-            SELECT COUNT(*)
-            FROM tweet_tags
-            WHERE tweet_id = ? AND tag_id = ?
             """;
 
     public void associateTagWithTweet(int tagId, int tweetId) throws SQLException {
@@ -60,7 +49,7 @@ public class TweetTagsRepository {
             statement.setInt(1, tweetId);
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    Tags tag = new Tags(resultSet.getInt("id"), resultSet.getString("name"));
+                    Tags tag = new Tags(resultSet.getString("name"));
                     tags.add(tag);
                 }
             }

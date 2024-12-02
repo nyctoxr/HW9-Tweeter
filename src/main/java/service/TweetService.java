@@ -53,9 +53,14 @@ public class TweetService {
             int dislikes = likesRepository.countDislikes(tweet.getId());
             User user = userRepository.findById(tweet.getUserId());
 
+            List<String> tagNames = new ArrayList<>();
+            for (Tags tag : tags) {
+                tagNames.add(tag.getTag_name());
+            }
+
             System.out.println("\n\nTweet ID: " + tweet.getId() +
                     ", Content: " + tweet.getContent() +
-                    ", Tags: " + tags +
+                    "\nTags: " + tagNames +
                     "\nUser Name: " + user.getUsername() +
                     ", Likes: " + likes +
                     ", Dislikes: " + dislikes +
