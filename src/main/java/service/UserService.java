@@ -1,21 +1,19 @@
 package service;
 
 import entities.User;
+import exceptions.UserAlreadyExists;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import repository.UserRepository;
 
 import java.sql.SQLException;
-import java.util.Scanner;
 
 public class UserService {
     public static User loggedInUser;
     private final UserRepository userRepository;
-    private final Scanner scanner;
     private final BCryptPasswordEncoder passwordEncoder;
 
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.scanner = new Scanner(System.in);
         this.passwordEncoder = new BCryptPasswordEncoder();
     }
 
@@ -27,30 +25,18 @@ public class UserService {
         return passwordEncoder.matches(password, hashedPassword);
     }
 
-    public void registerUser() throws SQLException {
-        System.out.println("Please enter your display name: ");
-        String displayname = scanner.nextLine();
-        System.out.println("Please enter your email address: : ");
-        String email = scanner.nextLine();
-        System.out.println("Please enter your username: ");
-        String username = scanner.nextLine();
-        System.out.println("Please enter your password: ");
-        String password = scanner.nextLine();
-        System.out.println("Please enter your bio: ");
-        String bio = scanner.nextLine();
+    public void registerUser(String displayName, String email, String username, String password, String bio) throws SQLException , UserAlreadyExists {
 
-        if(userRepository.isUsernameOrEmailTaken(username,email)) {
-            System.out.println("Username or email already taken");
-            registerUser();
-        }
-        else {
-            String hashedPassword = hashPassword(password);
-            User user = new User(displayname, email, username, hashedPassword, bio);
-            userRepository.save(user);
-            System.out.println("registered successfully");
-        }
-
+            if (userRepository.isUsernameOrEmailTaken(username, email)) {
+                throw new UserAlreadyExists("Username or email already exists");
+            } else {
+                String hashedPassword = hashPassword(password);
+                User user = new User(displayName, email, username, hashedPassword, bio);
+                userRepository.save(user);
+                System.out.println("Registered successfully");
+            }
     }
+
     public boolean login(String identifier, String password) throws SQLException {
 
         User user = userRepository.findByUsernameOrEmail(identifier);
@@ -67,53 +53,29 @@ public class UserService {
         System.out.println("logged out successfully");
     }
 
-    public void editUserProfile() throws SQLException {
-        boolean editing = true;
-
-        while (editing) {
-            System.out.println("What do you want to edit:");
-            System.out.println("1. Display Name (current: " + loggedInUser.getDisplayName() + ")");
-            System.out.println("2. Username (current: " + loggedInUser.getUsername() + ")");
-            System.out.println("3. Bio (current: " + loggedInUser.getBio() + ")");
-            System.out.println("4. Password");
-            System.out.println("5. Exit");
-
-            int choice = scanner.nextInt();
-            scanner.nextLine();
-
-            switch (choice) {
-                case 1:
-                    System.out.print("Enter new display name: ");
-                    String newDisplayName = scanner.nextLine();
-                    loggedInUser.setDisplayName(newDisplayName);
-                    break;
-                case 2:
-                    System.out.print("Enter new username: ");
-                    String newUsername = scanner.nextLine();
-                    loggedInUser.setUsername(newUsername);
-                    break;
-                case 3:
-                    System.out.print("Enter new bio: ");
-                    String newBio = scanner.nextLine();
-                    loggedInUser.setBio(newBio);
-                    break;
-                case 4:
-                    System.out.print("Enter new password: ");
-                    String newPassword = scanner.nextLine();
-                    String hashedPassword = hashPassword(newPassword);
-                    loggedInUser.setPassword(hashedPassword);
-                    break;
-                case 5:
-                    editing = false;
-                    continue;
-                default:
-                    System.out.println("Invalid choice. Please try again.");
-                    continue;
-            }
-
-            userRepository.updateUser(loggedInUser);
-            System.out.println("Profile updated successfully. You can edit another field or exit.");
+    public void editUserProfile(int choice, String newValue) throws SQLException {
+        switch (choice) {
+            case 1:
+                loggedInUser.setDisplayName(newValue);
+                break;
+            case 2:
+                loggedInUser.setEmail(newValue);
+                break;
+            case 3:
+                loggedInUser.setUsername(newValue);
+                break;
+            case 4:
+                String hashedPassword = hashPassword(newValue);
+                loggedInUser.setPassword(hashedPassword);
+                break;
+            case 5:
+                loggedInUser.setBio(newValue);
+            default:
+                System.out.println("Invalid choice. Please try again.");
+                return;
         }
+        userRepository.updateUser(loggedInUser);
+        System.out.println("Profile updated successfully.");
     }
     public User getLoggedInUser() {
         return loggedInUser;

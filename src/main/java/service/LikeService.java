@@ -1,33 +1,19 @@
 package service;
-
 import repository.LikesRepository;
-
 import java.sql.SQLException;
-import java.util.Scanner;
-
-
 public class LikeService {
 
     private final LikesRepository likesRepository;
 
-    private final Scanner scanner;
-
     public LikeService() {
-
         likesRepository = new LikesRepository();
-
-        scanner = new Scanner(System.in);
-
     }
 
 
-    public void likeOrDislikeTweet(int tweetId, int userId) throws SQLException {
+    public void likeOrDislikeTweet(int tweetId, int userId, String choice) throws SQLException {
         boolean currentStatus = LikesRepository.getLikeStatus(tweetId, userId);
 
         if (!currentStatus) {
-            System.out.println("Do you want to like (L) or dislike (D) the tweet? (Enter 'L' or 'D'): ");
-            String choice = scanner.nextLine();
-
             boolean isLike = choice.equalsIgnoreCase("L");
 
             if (choice.equalsIgnoreCase("L") || choice.equalsIgnoreCase("D")) {
@@ -37,9 +23,6 @@ public class LikeService {
                 System.out.println("Invalid choice. Please try again.");
             }
         } else {
-            System.out.println("You have already liked this tweet. Do you want to undo your like (U) or dislike (D) it? (Enter 'U' or 'D'): ");
-            String choice = scanner.nextLine();
-
             if (choice.equalsIgnoreCase("U")) {
                 likesRepository.delete(tweetId, userId);
                 System.out.println("Like removed successfully.");
